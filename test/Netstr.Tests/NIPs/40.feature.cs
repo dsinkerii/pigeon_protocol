@@ -221,8 +221,8 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Expired event already saved in a relay is omitted from sub response", "\tWe need to save an already expired event in the relay, that would be hard using " +
-                    "the publishing step (relay would reject it)\r\n\tSo just introduce a new step for t" +
-                    "his NIP which bypasses publishing and inserts directly into DB", tagsOfScenario, argumentsOfScenario, featureTags);
+                    "the publishing step (relay would reject it)\n\tSo just introduce a new step for th" +
+                    "is NIP which bypasses publishing and inserts directly into DB", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 31
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

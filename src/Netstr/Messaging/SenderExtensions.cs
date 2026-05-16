@@ -70,5 +70,25 @@ namespace Netstr.Messaging
                 }
             ]);
         }
+
+        public static void SendLibregramOk(this IWebSocketAdapter sender, string id, object payload)
+        {
+            sender.Send(
+            [
+                MessageType.LibregramOk,
+                id,
+                payload
+            ]);
+        }
+
+        public static void SendLibregramError(this IWebSocketAdapter sender, string id, string message)
+        {
+            sender.Send(
+            [
+                MessageType.LibregramError,
+                id,
+                message
+            ]);
+        }
     }
 }

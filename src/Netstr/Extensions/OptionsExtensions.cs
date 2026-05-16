@@ -19,6 +19,7 @@ namespace Netstr.Extensions
             return services
                 .AddApplicationOptions<ConnectionOptions>("Connection")
                 .AddApplicationOptions<RelayInformationOptions>("RelayInformation")
+                .AddApplicationOptions<LibregramOptions>("Libregram")
                 .AddApplicationOptions<LimitsOptions>("Limits")
                 .AddApplicationOptions<AuthOptions>("Auth")
                 .AddApplicationOptions<CleanupOptions>("Cleanup");

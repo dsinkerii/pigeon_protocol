@@ -250,9 +250,9 @@ this.FeatureBackground();
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Counting someone elses DMs returns only those from me", "\tBob sends a DM to Charlie\r\n\tAlice sends a DM to Charlie\r\n\tAlice tries to count a" +
-                    "ll Charlie\'s DMs but only those from her are counted\r\n\tCharlie counts his own DM" +
-                    "s which should return count of all", tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Counting someone elses DMs returns only those from me", "\tBob sends a DM to Charlie\n\tAlice sends a DM to Charlie\n\tAlice tries to count all" +
+                    " Charlie\'s DMs but only those from her are counted\n\tCharlie counts his own DMs w" +
+                    "hich should return count of all", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 41
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

@@ -124,8 +124,8 @@ namespace Netstr.Tests.NIPs
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Invalid messages are discarded, valid ones accepted", "\tRelay shouldn\'t broadcast messages with invalid Id or Signnature. It should also" +
-                    " reply with OK false.\r\n\tThis also covers correct validation of events with speci" +
-                    "al characters", tagsOfScenario, argumentsOfScenario, featureTags);
+                    " reply with OK false.\n\tThis also covers correct validation of events with specia" +
+                    "l characters", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 16
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -338,8 +338,8 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Closed subscriptions should no longer receive events", "\tAfter a subscription is closed the relay should no longer forward events for tha" +
-                    "t subscription\r\n\tHowever it should still forward them for other existing subscri" +
-                    "ptions", tagsOfScenario, argumentsOfScenario, featureTags);
+                    "t subscription\n\tHowever it should still forward them for other existing subscrip" +
+                    "tions", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 65
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

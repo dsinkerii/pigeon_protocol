@@ -41,8 +41,8 @@ namespace Netstr.Tests.NIPs
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-09", "\tA special event with kind 5, meaning \"deletion\" is defined as having a list of o" +
-                    "ne or more e or a tags, \r\n\teach referencing an event the author is requesting to" +
-                    " be deleted.", ProgrammingLanguage.CSharp, featureTags);
+                    "ne or more e or a tags, \n\teach referencing an event the author is requesting to " +
+                    "be deleted.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         

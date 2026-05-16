@@ -8,6 +8,7 @@ using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.MessageHandlers;
 using Netstr.Options;
+using OptionsFactory = Microsoft.Extensions.Options.Options;
 
 namespace Netstr.Tests
 {
@@ -25,6 +26,7 @@ namespace Netstr.Tests
                 new EventMessageHandler(Mock.Of<ILogger<EventMessageHandler>>(), eventDispatcher.Object, [], Mock.Of<IOptions<AuthOptions>>(), Mock.Of<IOptions<LimitsOptions>>()),
                 new SubscribeMessageHandler(Mock.Of<IDbContextFactory<NetstrDbContext>>(), [], Mock.Of<IOptions<LimitsOptions>>(), Mock.Of<IOptions<AuthOptions>>(), Mock.Of<ILogger<SubscribeMessageHandler>>()),
                 new UnsubscribeMessageHandler(Mock.Of<ILogger<UnsubscribeMessageHandler>>()),
+                new LibregramMessageHandler(OptionsFactory.Create(new LibregramOptions()), OptionsFactory.Create(new RelayInformationOptions())),
             ];
 
             this.dispatcher = new MessageDispatcher(Mock.Of<ILogger<MessageDispatcher>>(), this.handlers);
@@ -34,6 +36,7 @@ namespace Netstr.Tests
         [InlineData("EVENT", 0)]
         [InlineData("REQ", 1)]
         [InlineData("CLOSE", 2)]
+        [InlineData("LG", 3)]
         public void EventMessageHandlerTest(string messageType, int handlerIndex)
         {
             var message = $"[\"{messageType}\", {{}}]";

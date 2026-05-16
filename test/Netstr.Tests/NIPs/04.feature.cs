@@ -114,8 +114,8 @@ namespace Netstr.Tests.NIPs
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Not authenticated client tries to fetch kind 4 events", "\tAlice can\'t fetch kind 4 events when she isn\'t authenticated\r\n\tThis should be tr" +
-                    "ue even when multiple filters are used", tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Not authenticated client tries to fetch kind 4 events", "\tAlice can\'t fetch kind 4 events when she isn\'t authenticated\n\tThis should be tru" +
+                    "e even when multiple filters are used", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 13
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

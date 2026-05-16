@@ -1,13 +1,17 @@
-# [netstr - a nostr relay](https://relay.netstr.io/)
-[![release](https://img.shields.io/github/v/release/bezysoftware/netstr)](https://github.com/bezysoftware/netstr/releases)
-[![build](https://github.com/bezysoftware/netstr/workflows/build/badge.svg)](https://github.com/bezysoftware/netstr/workflows/actions)
+# [pigeon protocol](https://libregram.ru/) - a [netstr](https://relay.netstr.io/) fork
 
-![netstr logo](art/logo.jpg)
+![libregram logo](art/greg.png)
 
-Netstr is a modern relay for the [nostr protocol](https://github.com/nostr-protocol/nostr) written in C#. 
+Pigeon protocol is a fork of [https://github.com/bezysoftware/netstr](netstr), a modern relay for the [nostr protocol](https://github.com/nostr-protocol/nostr) written in C#, and enhanced to support libregram features (but still keep all the core features of nostr).
 
- * **Prod** instance: https://relay.netstr.io/
- * **Dev** instance: https://relay-dev.netstr.io/ (feel free to play with it / try to break it, just report if you find anything that needs fixing)
+ * **Prod** instance: https://libregram.ru/
+
+## What's pigeon protocol?
+Pigeon protocol is a slightly modified idea of a [nostr](https://github.com/nostr-protocol/nostr) relay - all the core ideas are kept as-is, however it appends small QOL features for the [libregram](https://github.com/dsinkerii/libregram) app.
+
+## WARNING:
+honestly - have no idea what im doing lmaooo... libregram has been one of the most hardest projects i've ever worked on, which spans from the frontend app written in dart - a language i found out only in **late 2025** (it's mid 2026 as of now), to this new backend which i decided to expand in order to optimize for it.\
+of course, without any help of LLM's, all of this would've been impossible, so i'm both sorry for relying on it to code this, but i'm also thankful that this tech exists, otherwise libregram wouldn't be a thing in this year
 
 ## Features
 

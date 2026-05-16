@@ -11,6 +11,9 @@
         public const string EndOfStoredEvents = "EOSE";
         public const string Ok = "OK";
         public const string Count = "COUNT";
+        public const string Libregram = "LG";
+        public const string LibregramOk = "LG-OK";
+        public const string LibregramError = "LG-ERR";
 
         public static class Negentropy
         {

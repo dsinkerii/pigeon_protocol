@@ -41,8 +41,8 @@ namespace Netstr.Tests.NIPs
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-11", "\tRelays may provide server metadata to clients to inform them of capabilities, ad" +
-                    "ministrative contacts, and various server attributes.\r\n\tThis is made available a" +
-                    "s a JSON document over HTTP, on the same URI as the relay\'s websocket.", ProgrammingLanguage.CSharp, featureTags);
+                    "ministrative contacts, and various server attributes.\n\tThis is made available as" +
+                    " a JSON document over HTTP, on the same URI as the relay\'s websocket.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -108,7 +108,7 @@ namespace Netstr.Tests.NIPs
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Relay sends an information document", "\tGET HTTP request to the websockets endpoint with a application/nostr+json Accept" +
-                    " header should\r\n\tproduce a json Relay Information Document", tagsOfScenario, argumentsOfScenario, featureTags);
+                    " header should\n\tproduce a json Relay Information Document", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 11
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

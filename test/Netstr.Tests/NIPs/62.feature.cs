@@ -41,8 +41,8 @@ namespace Netstr.Tests.NIPs
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
             TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-62", "\tNostr-native way to request a complete reset of a key\'s fingerprint on the web. " +
-                    "\r\n\tThis procedure is legally binding in some jurisdictions, and thus, supporters" +
-                    " of this NIP should truly delete events from their database.", ProgrammingLanguage.CSharp, featureTags);
+                    "\n\tThis procedure is legally binding in some jurisdictions, and thus, supporters " +
+                    "of this NIP should truly delete events from their database.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -125,9 +125,9 @@ namespace Netstr.Tests.NIPs
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Request to Vanish deletes user\'s data", "\tOnly requestor\'s data is deleted, including GiftWraps where they are tagged\r\n\tOn" +
-                    "ly events from before the request\'s createdAt timestamp is deleted\r\n\tNo-one else" +
-                    "\'s events are deleted", tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Request to Vanish deletes user\'s data", "\tOnly requestor\'s data is deleted, including GiftWraps where they are tagged\n\tOnl" +
+                    "y events from before the request\'s createdAt timestamp is deleted\n\tNo-one else\'s" +
+                    " events are deleted", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 17
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -334,8 +334,8 @@ this.FeatureBackground();
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Deleting Request to Vanish is rejected", "\tPublishing a deletion request event (Kind 5) against a request to vanish has no " +
-                    "effect. \r\n\tClients and relays are not obliged to support \"unrequest vanish\" func" +
-                    "tionality.", tagsOfScenario, argumentsOfScenario, featureTags);
+                    "effect. \n\tClients and relays are not obliged to support \"unrequest vanish\" funct" +
+                    "ionality.", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 59
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -396,9 +396,9 @@ this.FeatureBackground();
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Older Request to Vanish does nothing, newer deletes newer events", "\tFirst vanish request works as expected. \r\n\tSecond (older) one should be ignored " +
-                    "and old events should still be rejetected.\r\n\tThird (newer) is accepted and its C" +
-                    "reatedAt is used to reject old events.\r\n\tNewer events are still accepted.", tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Older Request to Vanish does nothing, newer deletes newer events", "\tFirst vanish request works as expected. \n\tSecond (older) one should be ignored a" +
+                    "nd old events should still be rejetected.\n\tThird (newer) is accepted and its Cre" +
+                    "atedAt is used to reject old events.\n\tNewer events are still accepted.", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 71
 this.ScenarioInitialize(scenarioInfo);
 #line hidden
@@ -519,9 +519,9 @@ this.FeatureBackground();
         {
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
-            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Request to Vanish is ignored when relay tag doesn\'t match current relay", "\tEvent is rejected for missing or incorrect relay tag.\r\n\tCorrect one assumes the " +
-                    "connection is on ws://localhost/. Relay should be able to normalize its own URL " +
-                    "and the one in tag (e.g. trim ws:// or wss://, trailing / etc)", tagsOfScenario, argumentsOfScenario, featureTags);
+            TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Request to Vanish is ignored when relay tag doesn\'t match current relay", "\tEvent is rejected for missing or incorrect relay tag.\n\tCorrect one assumes the c" +
+                    "onnection is on ws://localhost/. Relay should be able to normalize its own URL a" +
+                    "nd the one in tag (e.g. trim ws:// or wss://, trailing / etc)", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 97
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

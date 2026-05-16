@@ -40,8 +40,8 @@ namespace Netstr.Tests.NIPs
         public static void FeatureSetup()
         {
             testRunner = TechTalk.SpecFlow.TestRunnerManager.GetTestRunner();
-            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-13", "\t Proof of Work (PoW) is a way to add a proof of computational work to a note.\r\n\t" +
-                    " This proof can be used as a means of spam deterrence.", ProgrammingLanguage.CSharp, featureTags);
+            TechTalk.SpecFlow.FeatureInfo featureInfo = new TechTalk.SpecFlow.FeatureInfo(new System.Globalization.CultureInfo("en-US"), "NIPs", "NIP-13", "\t Proof of Work (PoW) is a way to add a proof of computational work to a note.\n\t " +
+                    "This proof can be used as a means of spam deterrence.", ProgrammingLanguage.CSharp, featureTags);
             testRunner.OnFeatureStart(featureInfo);
         }
         
@@ -115,8 +115,8 @@ namespace Netstr.Tests.NIPs
             string[] tagsOfScenario = ((string[])(null));
             System.Collections.Specialized.OrderedDictionary argumentsOfScenario = new System.Collections.Specialized.OrderedDictionary();
             TechTalk.SpecFlow.ScenarioInfo scenarioInfo = new TechTalk.SpecFlow.ScenarioInfo("Messages with low difficulty and those off target are rejected, those with high a" +
-                    "nd on target difficulty accepted", "\t1) Low diff\r\n\t2) High diff but doesn\'t match target\r\n\t3) High diff\r\n\t4) High dif" +
-                    "f matching target", tagsOfScenario, argumentsOfScenario, featureTags);
+                    "nd on target difficulty accepted", "\t1) Low diff\n\t2) High diff but doesn\'t match target\n\t3) High diff\n\t4) High diff m" +
+                    "atching target", tagsOfScenario, argumentsOfScenario, featureTags);
 #line 13
 this.ScenarioInitialize(scenarioInfo);
 #line hidden

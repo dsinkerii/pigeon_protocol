@@ -29,6 +29,7 @@ namespace Netstr.Extensions
             services.AddSingleton<IMessageHandler, UnsubscribeMessageHandler>();
             services.AddSingleton<IMessageHandler, AuthMessageHandler>();
             services.AddSingleton<IMessageHandler, CountMessageHandler>();
+            services.AddSingleton<IMessageHandler, LibregramMessageHandler>();
 
             // negentropy messages
             services.AddSingleton<IMessageHandler, NegentropyOpenHandler>();
