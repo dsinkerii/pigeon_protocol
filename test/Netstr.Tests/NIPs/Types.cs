@@ -41,6 +41,8 @@ namespace Netstr.Tests.NIPs
                 MessageType.Closed => [""],
                 MessageType.Auth => [],
                 MessageType.Count => [message[2].DeserializeRequired<CountValue>().Count],
+                MessageType.LibregramOk => [message[2]],
+                MessageType.LibregramError => [message[2].GetString() ?? ""],
                 _ => []
             };
 
