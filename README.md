@@ -1,10 +1,8 @@
-# [pigeon protocol](https://libregram.ru/) - a [netstr](https://relay.netstr.io/) fork
+# pigeon protocol - a [netstr](https://relay.netstr.io/) fork
 
 ![libregram logo](art/greg.png)
 
 Pigeon protocol is a fork of [https://github.com/bezysoftware/netstr](netstr), a modern relay for the [nostr protocol](https://github.com/nostr-protocol/nostr) written in C#, and enhanced to support libregram features (but still keep all the core features of nostr).
-
- * **Prod** instance: https://libregram.ru/
 
 ## What's pigeon protocol?
 Pigeon protocol is a slightly modified idea of a [nostr](https://github.com/nostr-protocol/nostr) relay - all the core ideas are kept as-is, however it appends small QOL features for the [libregram](https://github.com/dsinkerii/libregram) app.
@@ -83,6 +81,12 @@ Netstr is c# app backed by a Postgres database. You have several options to get 
 * Install Postgres: https://www.postgresql.org/download/
 * Edit `appsettings.json` and set a `NetstrDatabase` Connection String to point to your Postgres instance
 * Run `dotnet run --project .\src\Netstr\Netstr.csproj`
+
+# Docker
+
+
+
+> libregram as of now does **not** have an official docker image, everything listed below is documentation for Neststr.
 
 ### Docker run
 
