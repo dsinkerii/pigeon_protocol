@@ -19,6 +19,8 @@ namespace Netstr.Data
         
         public DbSet<TagEntity> Tags { get; set; }
 
+        public DbSet<BlobEntity> Blobs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<EventEntity>(e =>
@@ -51,6 +53,13 @@ namespace Netstr.Data
             {
                 e.HasKey(x => x.Id);
                 e.HasIndex(x => new { x.Name, x.Value, x.EventId }, TagValueIndexName).IsUnique();
+            });
+
+            builder.Entity<BlobEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.Sha256).IsUnique();
+                e.HasIndex(x => new { x.OwnerPubkey, x.UploadedAt });
             });
         }
 

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Netstr.Blossom;
 using Netstr.Data;
 using Netstr.Extensions;
 using Netstr.Middleware;
@@ -23,6 +24,8 @@ builder.Services
     .AddHostedService<NegentropyBackgroundWatcher>()
     .AddHostedService<CleanupBackgroundService>()
     .AddScoped<IRelayInformationService, RelayInformationService>()
+    .AddSingleton<BlossomTokenValidator>()
+    .AddSingleton<IBlobStorageService, FileBlobStorageService>()
     .AddDbContextFactory<NetstrDbContext>(x => x.UseNpgsql(connectionString));
 
 var application = builder.Build();

@@ -22,7 +22,8 @@ namespace Netstr.Extensions
                 .AddApplicationOptions<LibregramOptions>("Libregram")
                 .AddApplicationOptions<LimitsOptions>("Limits")
                 .AddApplicationOptions<AuthOptions>("Auth")
-                .AddApplicationOptions<CleanupOptions>("Cleanup");
+                .AddApplicationOptions<CleanupOptions>("Cleanup")
+                .AddApplicationOptions<BlossomOptions>("Blossom");
         }
     }
 }

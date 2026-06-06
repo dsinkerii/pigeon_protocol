@@ -11,5 +11,8 @@
         public const string Relay = "relay";
         public const string Protected = "-";
         public const string Expiration = "expiration";
+        public const string BlossomAction = "t";
+        public const string BlossomServer = "server";
+        public const string BlossomBlobHash = "x";
     }
 }

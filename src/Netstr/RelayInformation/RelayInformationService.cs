@@ -13,17 +13,23 @@ namespace Netstr.RelayInformation
     {
         private readonly IOptions<RelayInformationOptions> options;
         private readonly IOptions<LimitsOptions> limits;
+        private readonly IOptions<BlossomOptions> blossom;
 
-        public RelayInformationService(IOptions<RelayInformationOptions> options, IOptions<LimitsOptions> limits)
+        public RelayInformationService(
+            IOptions<RelayInformationOptions> options,
+            IOptions<LimitsOptions> limits,
+            IOptions<BlossomOptions> blossom)
         {
             this.options = options;
             this.limits = limits;
+            this.blossom = blossom;
         }
 
         public RelayInformationModel GetDocument()
         {
             var opts = this.options.Value;
             var limits = this.limits.Value;
+            var b = this.blossom.Value;
 
             return new RelayInformationModel
             {
@@ -45,7 +51,15 @@ namespace Netstr.RelayInformation
                     MaxFilters = limits.Subscriptions.MaxFilters,
                     MaxSubscriptionIdLength = limits.Subscriptions.MaxSubscriptionIdLength,
                     MaxSubscriptions = limits.Subscriptions.MaxSubscriptions
-                }
+                },
+                Blossom = b.Enabled ? new BlossomInfo
+                {
+                    Enabled = true,
+                    MaxUploadSize = b.MaxUploadSizeBytes,
+                    MaxPerUser = b.MaxStoragePerUserBytes,
+                    MaxTotal = b.MaxTotalStorageBytes,
+                    AllowedTypes = b.AllowedMimeTypes
+                } : null
             };
         }
     }

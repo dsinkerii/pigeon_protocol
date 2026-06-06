@@ -27,5 +27,26 @@ namespace Netstr.RelayInformation
 
         [JsonPropertyName("limitation")]
         public required RelayInformationLimits Limits { get; init; }
+
+        [JsonPropertyName("blossom")]
+        public BlossomInfo? Blossom { get; init; }
+    }
+
+    public record BlossomInfo
+    {
+        [JsonPropertyName("enabled")]
+        public required bool Enabled { get; init; }
+
+        [JsonPropertyName("max_upload_size")]
+        public required long MaxUploadSize { get; init; }
+
+        [JsonPropertyName("max_per_user")]
+        public required long MaxPerUser { get; init; }
+
+        [JsonPropertyName("max_total")]
+        public required long MaxTotal { get; init; }
+
+        [JsonPropertyName("allowed_types")]
+        public required string[] AllowedTypes { get; init; }
     }
 }

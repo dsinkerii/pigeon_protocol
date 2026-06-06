@@ -7,5 +7,7 @@
         public static int RequestToVanish = 62;
         public static int GiftWrap = 1059;
         public static int Auth = 22242;
+        public static int BlossomToken = 24242;
+        public static int UserServerList = 10063;
     }
 }
