@@ -23,7 +23,8 @@ namespace Netstr.Extensions
                 .AddApplicationOptions<LimitsOptions>("Limits")
                 .AddApplicationOptions<AuthOptions>("Auth")
                 .AddApplicationOptions<CleanupOptions>("Cleanup")
-                .AddApplicationOptions<BlossomOptions>("Blossom");
+                .AddApplicationOptions<BlossomOptions>("Blossom")
+                .AddApplicationOptions<NotificationOptions>("Notifications");
         }
     }
 }

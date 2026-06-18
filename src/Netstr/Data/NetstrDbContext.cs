@@ -21,6 +21,8 @@ namespace Netstr.Data
 
         public DbSet<BlobEntity> Blobs { get; set; }
 
+        public DbSet<NotificationTokenEntity> NotificationTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             builder.Entity<EventEntity>(e =>
@@ -60,6 +62,13 @@ namespace Netstr.Data
                 e.HasKey(x => x.Id);
                 e.HasIndex(x => x.Sha256).IsUnique();
                 e.HasIndex(x => new { x.OwnerPubkey, x.UploadedAt });
+            });
+
+            builder.Entity<NotificationTokenEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.Token).IsUnique();
+                e.HasIndex(x => x.Pubkey);
             });
         }
 

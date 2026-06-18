@@ -112,3 +112,61 @@ The `scripts` folder contains scripts to setup a VM in Azure with everything you
  * Separate VM with an attached data disk
  * Docker with Compose to run the `compose.yml`
  * Nginx with certbot which generates an SSL certificate for your domain
+
+## Libregram Notification System
+
+Custom extension for Android notification polling. Phone polls REST endpoint (no WebSocket needed) to check for new messages in background.
+
+### Endpoints
+
+| Method | Path | Auth | Description |
+|---|---|---|---|
+| GET | `/notifications?since=<unix-ts>&content=true` | `Nostr` (kind 24242) or `Notify <token>` | Returns new events since timestamp |
+| POST | `/notifications/token` | `Nostr` (kind 24242, `t=notifications`) | Issue or renew bearer token |
+| DELETE | `/notifications/token` | `Nostr` (kind 24242) | Revoke bearer token |
+
+### Auth Schemes
+
+**Nostr 24242** - standard NIP-98 auth. Client signs kind `24242` event with `t=notifications` tag and `expiration` tag, sends as `Authorization: Nostr <base64-event>`. Full access including message content.
+
+**Notify token** - lightweight bearer token for background polling. Created via `POST /notifications/token`. Sent as `Authorization: Notify <token>`. Content always suppressed (even if `?content=true`). Token expires after 10 days of no real-key auth. Can be revoked via `DELETE /notifications/token`.
+
+### Query Logic
+
+Returns non-deleted events where `p` tag value = authenticated pubkey, `created_at >= since`. Ordered by `created_at DESC`, limited to `MaxEvents` (default 50).
+
+### Response
+
+```json
+{
+  "events": [
+    {
+      "id": "event-hex",
+      "pubkey": "sender-hex",
+      "kind": 1059,
+      "created_at": 1718000000,
+      "content": "ciphertext-or-plaintext-or-null",
+      "tags": [["p", "recipient-hex"]]
+    }
+  ],
+  "since": 1718000000,
+  "until": 1718000500
+}
+```
+
+`content` field is null when using Notify auth. Always present for public chat messages (kind 9102). Contains NIP-44 ciphertext for encrypted types (1059 DM, 9105 sealed room).
+
+### Configuration (`appsettings.json`)
+
+```json
+"Notifications": {
+  "Enabled": true,
+  "MaxEvents": 50,
+  "MaxSinceAgeDays": 90,
+  "TokenLifetimeDays": 10
+}
+```
+
+### DB Table
+
+`NotificationTokens` stores token -> pubkey mappings with `IssuedAt` and `LastAuthAt` timestamps. Token column has unique index. Pubkey column has non-unique index for fast lookup.
