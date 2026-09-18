@@ -13,14 +13,8 @@
             {
                 if (property != null)
                 {
-                    var type = property.PropertyType;
                     var val = property.GetValue(settings);
-                    object? defaultValue = type.IsValueType ? Activator.CreateInstance(type) : null;
-                    
-                    if (!object.Equals(val, defaultValue))
-                    {
-                        yield return new KeyValuePair<string, string>($"{settingsRoot}:{property.Name}", val?.ToString());
-                    }
+                    yield return new KeyValuePair<string, string>($"{settingsRoot}:{property.Name}", val?.ToString());
                 }
             }
         }

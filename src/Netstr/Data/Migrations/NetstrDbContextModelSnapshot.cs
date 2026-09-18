@@ -17,10 +17,46 @@ namespace Netstr.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.4")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("Netstr.Data.BlobEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerPubkey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Sha256")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Size")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTimeOffset>("UploadedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Sha256")
+                        .IsUnique();
+
+                    b.HasIndex("OwnerPubkey", "UploadedAt");
+
+                    b.ToTable("Blobs");
+                });
 
             modelBuilder.Entity("Netstr.Data.EventEntity", b =>
                 {
@@ -73,9 +109,88 @@ namespace Netstr.Data.Migrations
 
                     b.HasIndex(new[] { "EventPublicKey", "EventKind", "EventDeduplication" }, "ReplaceableEventsIdx")
                         .IsUnique()
-                        .HasFilter("\r\n                    (\"EventKind\" = 0) OR \r\n                    (\"EventKind\" = 3) OR \r\n                    (\"EventKind\" >= 10000 AND \"EventKind\" < 20000) OR \r\n                    (\"EventKind\" >= 30000 AND \"EventKind\" < 40000)");
+                        .HasFilter("\n                    (\"EventKind\" = 0) OR \n                    (\"EventKind\" = 3) OR \n                    (\"EventKind\" >= 10000 AND \"EventKind\" < 20000) OR \n                    (\"EventKind\" >= 30000 AND \"EventKind\" < 40000)");
 
                     b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("Netstr.Data.NotificationTokenEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("IssuedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("LastAuthAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Pubkey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Pubkey");
+
+                    b.HasIndex("Token")
+                        .IsUnique();
+
+                    b.ToTable("NotificationTokens");
+                });
+
+            modelBuilder.Entity("Netstr.Data.PendingVanishEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("BanAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("CancelBefore")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Cancelled")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("Executed")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("ExecutedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("Irreversible")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Pubkey")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("WillCreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WillEventId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Pubkey");
+
+                    b.HasIndex("Pubkey", "WillEventId")
+                        .IsUnique();
+
+                    b.ToTable("PendingVanishes");
                 });
 
             modelBuilder.Entity("Netstr.Data.TagEntity", b =>
@@ -93,7 +208,7 @@ namespace Netstr.Data.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string[]>("OtherValues")
+                    b.PrimitiveCollection<string[]>("OtherValues")
                         .IsRequired()
                         .HasColumnType("text[]");
 
@@ -108,42 +223,6 @@ namespace Netstr.Data.Migrations
                         .IsUnique();
 
                     b.ToTable("Tags");
-                });
-
-            modelBuilder.Entity("Netstr.Data.BlobEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OwnerPubkey")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Sha256")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<long>("Size")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTimeOffset>("UploadedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Sha256")
-                        .IsUnique();
-
-                    b.HasIndex(new[] { "OwnerPubkey", "UploadedAt" });
-
-                    b.ToTable("Blobs");
                 });
 
             modelBuilder.Entity("Netstr.Data.TagEntity", b =>

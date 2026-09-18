@@ -1,4 +1,4 @@
-﻿using Netstr.Messaging.Models;
+using Netstr.Messaging.Models;
 using Netstr.Messaging.Negentropy;
 using Netstr.Messaging.Subscriptions;
 
@@ -14,6 +14,8 @@ namespace Netstr.Messaging
     {
         void Send(MessageBatch batch);
 
+        Task CloseAsync(string reason);
+
         ISubscriptionsAdapter Subscriptions { get; }
         
         INegentropyAdapter Negentropy { get; }
@@ -24,6 +26,8 @@ namespace Netstr.Messaging
     public interface IWebSocketAdapterCollection
     {
         void Add(IWebSocketAdapter adapter);
+
+        IWebSocketAdapter? GetById(string id);
 
         IEnumerable<IWebSocketAdapter> GetAll();
 

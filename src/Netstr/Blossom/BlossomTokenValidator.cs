@@ -32,7 +32,7 @@ namespace Netstr.Blossom
             this.logger = logger;
         }
 
-        public BlossomAuthResult Validate(string? authorizationHeader, string expectedAction, string? expectedBlobHash = null)
+        public BlossomAuthResult Validate(string? authorizationHeader, string expectedAction, string? expectedBlobHash = null, string? expectedServer = null)
         {
             if (string.IsNullOrEmpty(authorizationHeader))
             {
@@ -131,7 +131,32 @@ namespace Netstr.Blossom
             var serverTags = tokenEvent.GetTagValues(EventTag.BlossomServer).ToList();
             if (serverTags.Count > 0)
             {
-                // TODO
+                if (string.IsNullOrWhiteSpace(expectedServer))
+                {
+                    return new BlossomAuthResult { IsValid = false, Error = "Token requires server validation but target server is not specified" };
+                }
+
+                var normalizedExpected = expectedServer.TrimEnd('/').ToLowerInvariant();
+                string? expectedHost = null;
+                if (Uri.TryCreate(expectedServer, UriKind.Absolute, out var expectedUri))
+                {
+                    expectedHost = expectedUri.Host.ToLowerInvariant();
+                }
+
+                var matches = serverTags.Any(tag =>
+                {
+                    if (string.IsNullOrWhiteSpace(tag)) return false;
+                    var normalizedTag = tag.TrimEnd('/').ToLowerInvariant();
+                    if (normalizedTag == normalizedExpected) return true;
+                    if (expectedHost != null && normalizedTag == expectedHost) return true;
+                    if (Uri.TryCreate(tag, UriKind.Absolute, out var tagUri) && expectedHost != null && tagUri.Host.Equals(expectedHost, StringComparison.OrdinalIgnoreCase)) return true;
+                    return false;
+                });
+
+                if (!matches)
+                {
+                    return new BlossomAuthResult { IsValid = false, Error = "Token server tag does not match this server" };
+                }
             }
 
             this.logger.LogDebug("Validated Blossom token for pubkey {Pubkey}, action {Action}", tokenEvent.PublicKey, action);

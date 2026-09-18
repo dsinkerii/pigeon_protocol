@@ -45,6 +45,10 @@ namespace Netstr.Messaging.Models
 
         public bool IsRequestToVanish() => Kind == EventKind.RequestToVanish;
 
+        public bool IsRequestToVanishCancel() =>
+            Kind == EventKind.RequestToVanish &&
+            GetTagValue("action") == "cancel";
+
         public bool IsProtected() => Tags.Any(x => x.Length >= 1 && x[0] == EventTag.Protected);
 
         public string ToStringUnique()

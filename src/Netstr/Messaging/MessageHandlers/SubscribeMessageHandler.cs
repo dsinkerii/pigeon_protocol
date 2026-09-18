@@ -15,9 +15,11 @@ namespace Netstr.Messaging.MessageHandlers
     public class SubscribeMessageHandler : FilterMessageHandlerBase
     {
         private readonly IDbContextFactory<NetstrDbContext> db;
+        private readonly IUserCache userCache;
 
         public SubscribeMessageHandler(
             IDbContextFactory<NetstrDbContext> db,
+            IUserCache userCache,
             IEnumerable<ISubscriptionRequestValidator> validators,
             IOptions<LimitsOptions> limits,
             IOptions<AuthOptions> auth,
@@ -25,6 +27,7 @@ namespace Netstr.Messaging.MessageHandlers
             : base(validators, limits, auth, logger)
         {
             this.db = db;
+            this.userCache = userCache;
         }
 
         protected override string AcceptedMessageType => MessageType.Req;
@@ -54,17 +57,17 @@ namespace Netstr.Messaging.MessageHandlers
             subscription.SendStoredEvents(events);
         }
 
-        private Event CreateEvent(EventEntity e)
+        private Event CreateEvent(EventEntity entity)
         {
-            return new Event
+            var e = new Event
             {
-                Id = e.EventId,
-                Content = e.EventContent,
-                CreatedAt = e.EventCreatedAt,
-                Kind = e.EventKind,
-                PublicKey = e.EventPublicKey,
-                Signature = e.EventSignature,
-                Tags = e.Tags.Select(tag => 
+                Id = entity.EventId,
+                Content = entity.EventContent,
+                CreatedAt = entity.EventCreatedAt,
+                Kind = entity.EventKind,
+                PublicKey = entity.EventPublicKey,
+                Signature = entity.EventSignature,
+                Tags = entity.Tags.Select(tag =>
                 {
                     if (tag.Value == null)
                     {
@@ -74,6 +77,8 @@ namespace Netstr.Messaging.MessageHandlers
                     return (string[])[tag.Name, tag.Value, ..tag.OtherValues];
                 }).ToArray()
             };
+
+            return VanishProfileHelper.InjectVanishFields(e, this.userCache);
         }
     }
 }

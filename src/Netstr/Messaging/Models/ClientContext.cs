@@ -1,4 +1,4 @@
-﻿namespace Netstr.Messaging.Models
+namespace Netstr.Messaging.Models
 {
     /// <summary>
     /// Holds basic info about a client.
@@ -18,6 +18,8 @@
         
         public string Challenge { get; }
         
+        public DateTimeOffset ConnectedAt { get; } = DateTimeOffset.UtcNow;
+
         public string? PublicKey { get; private set; }
 
         public bool IsAuthenticated() => !string.IsNullOrEmpty(PublicKey); 

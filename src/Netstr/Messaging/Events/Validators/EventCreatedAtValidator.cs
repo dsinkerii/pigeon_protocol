@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Netstr.Messaging.Models;
 using Netstr.Options;
 
@@ -19,7 +19,7 @@ namespace Netstr.Messaging.Events.Validators
         public string? Validate(Event e, ClientContext context)
         {
             var limits = this.limits.Value.Events;
-            var now = DateTimeOffset.Now;
+            var now = DateTimeOffset.UtcNow;
 
             if (limits.MaxCreatedAtLowerOffset > 0 && e.CreatedAt < now.AddSeconds(-limits.MaxCreatedAtLowerOffset))
             {

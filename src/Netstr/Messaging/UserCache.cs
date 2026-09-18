@@ -12,11 +12,16 @@ namespace Netstr.Messaging
         User? GetByPublicKey(string publicKey);
         
         User Vanish(string publicKey, DateTimeOffset timestamp);
+
+        User SetPendingVanish(string publicKey, DateTimeOffset pendingAt, DateTimeOffset cancelBefore, DateTimeOffset banAt);
+
+        User ClearPendingVanish(string publicKey);
+
+        User SetVanishIrreversible(string publicKey, DateTimeOffset willCreatedAt);
     }
 
     public class UserCache : IUserCache
     {
-        // Use MemoryCache with CacheItemPolicy NotRemovable for users which vanished?
         private readonly ConcurrentDictionary<string, User> users = new();
 
         public User? GetByPublicKey(string publicKey)
@@ -47,7 +52,65 @@ namespace Netstr.Messaging
             return this.users.AddOrUpdate(
                 publicKey,
                 key => new User { PublicKey = key, LastVanished = timestamp },
-                (key, user) => user with { LastVanished = timestamp });
+                (key, user) => user with { LastVanished = timestamp, PendingVanishAt = null, VanishIrreversible = false });
+        }
+
+        public User SetPendingVanish(string publicKey, DateTimeOffset pendingAt, DateTimeOffset cancelBefore, DateTimeOffset banAt)
+        {
+            return this.users.AddOrUpdate(
+                publicKey,
+                key => new User
+                {
+                    PublicKey = key,
+                    PendingVanishAt = pendingAt,
+                    PendingCancelBefore = cancelBefore,
+                    PendingBanAt = banAt,
+                    VanishIrreversible = false
+                },
+                (key, user) => user with
+                {
+                    PendingVanishAt = pendingAt,
+                    PendingCancelBefore = cancelBefore,
+                    PendingBanAt = banAt,
+                    VanishIrreversible = false
+                });
+        }
+
+        public User ClearPendingVanish(string publicKey)
+        {
+            return this.users.AddOrUpdate(
+                publicKey,
+                key => new User { PublicKey = key },
+                (key, user) => user with
+                {
+                    PendingVanishAt = null,
+                    PendingCancelBefore = null,
+                    PendingBanAt = null,
+                    VanishIrreversible = false
+                });
+        }
+
+        public User SetVanishIrreversible(string publicKey, DateTimeOffset willCreatedAt)
+        {
+            return this.users.AddOrUpdate(
+                publicKey,
+                key => new User
+                {
+                    PublicKey = key,
+                    LastVanished = willCreatedAt,
+                    PendingVanishAt = null,
+                    PendingCancelBefore = null,
+                    PendingBanAt = null,
+                    VanishIrreversible = false
+                },
+                (key, user) => user with
+                {
+                    LastVanished = willCreatedAt,
+                    PendingVanishAt = null,
+                    PendingCancelBefore = null,
+                    PendingBanAt = null,
+                    VanishIrreversible = false
+                });
         }
     }
 }

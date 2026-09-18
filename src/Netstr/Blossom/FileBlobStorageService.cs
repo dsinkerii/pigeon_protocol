@@ -36,6 +36,10 @@ namespace Netstr.Blossom
             using var dbContext = this.db.CreateDbContext();
             var entity = await dbContext.Blobs.FirstOrDefaultAsync(x => x.Sha256 == sha256);
             var contentType = entity?.ContentType ?? "application/octet-stream";
+            if (contentType is "application/octet-stream" or "binary/octet-stream" or "")
+            {
+                contentType = Services.BlossomManagerService.SniffMimeType(filePath, contentType);
+            }
 
             return (stream, contentType, fileInfo.Length);
         }
@@ -150,9 +154,7 @@ namespace Netstr.Blossom
 
         public string GetBlobUrl(string sha256, string contentType, string? baseUrl = null)
         {
-            var extensions = global::Netstr.MimeTypes.GetMimeTypeExtensions(contentType);
-            var ext = extensions.FirstOrDefault() ?? "bin";
-            if (!ext.StartsWith('.')) ext = "." + ext;
+            var ext = Services.BlossomManagerService.GetExtensionForMimeType(contentType);
             var path = $"/{sha256}{ext}";
             if (!string.IsNullOrEmpty(baseUrl))
             {
@@ -163,7 +165,8 @@ namespace Netstr.Blossom
 
         private string GetFilePath(string sha256)
         {
-            return Path.Combine(options.StoragePath, sha256);
+            var fileName = Path.GetFileName(sha256);
+            return Path.Combine(options.StoragePath, fileName);
         }
 
         public async Task<long> GetTotalStorageUsedAsync()

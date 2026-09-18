@@ -82,14 +82,14 @@ namespace Netstr.Tests.NIPs
 #line 5
  testRunner.Given("a relay is running", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "Given ");
 #line hidden
-            TechTalk.SpecFlow.Table table161 = new TechTalk.SpecFlow.Table(new string[] {
+            TechTalk.SpecFlow.Table table164 = new TechTalk.SpecFlow.Table(new string[] {
                         "PublicKey",
                         "PrivateKey"});
-            table161.AddRow(new string[] {
+            table164.AddRow(new string[] {
                         "5758137ec7f38f3d6c3ef103e28cd9312652285dab3497fe5e5f6c5c0ef45e75",
                         "nsec12y4pgafw6kpcqjtfyrdyxtcupnddj5kdft768kdl55wzq50ervpqauqnw4"});
 #line 6
- testRunner.And("Alice is connected to relay", ((string)(null)), table161, "And ");
+ testRunner.And("Alice is connected to relay", ((string)(null)), table164, "And ");
 #line hidden
         }
         
@@ -122,16 +122,16 @@ this.FeatureBackground();
 #line 11
  testRunner.When("Alice sends a Libregram request req1 lg.capabilities", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table162 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table165 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "IsLibregramRelay",
                             "Command"});
-                table162.AddRow(new string[] {
+                table165.AddRow(new string[] {
                             "req1",
                             "true",
                             "lg.capabilities"});
 #line 12
- testRunner.Then("Alice receives a Libregram OK reply", ((string)(null)), table162, "Then ");
+ testRunner.Then("Alice receives a Libregram OK reply", ((string)(null)), table165, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();
@@ -161,14 +161,14 @@ this.FeatureBackground();
 #line 17
  testRunner.When("Alice sends a Libregram request req2 lg.nope", ((string)(null)), ((TechTalk.SpecFlow.Table)(null)), "When ");
 #line hidden
-                TechTalk.SpecFlow.Table table163 = new TechTalk.SpecFlow.Table(new string[] {
+                TechTalk.SpecFlow.Table table166 = new TechTalk.SpecFlow.Table(new string[] {
                             "Id",
                             "Message"});
-                table163.AddRow(new string[] {
+                table166.AddRow(new string[] {
                             "req2",
                             "unsupported: unknown libregram command lg.nope"});
 #line 18
- testRunner.Then("Alice receives a Libregram error reply", ((string)(null)), table163, "Then ");
+ testRunner.Then("Alice receives a Libregram error reply", ((string)(null)), table166, "Then ");
 #line hidden
             }
             this.ScenarioCleanup();

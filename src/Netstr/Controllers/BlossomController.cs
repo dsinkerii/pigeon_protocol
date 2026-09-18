@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Netstr.Blossom;
+using Netstr.Messaging;
 using Netstr.Options;
+using Netstr.Services;
 using System.Security.Cryptography;
 using System.Text.Json;
 
@@ -12,17 +14,23 @@ namespace Netstr.Controllers
     {
         private readonly IBlobStorageService blobStorage;
         private readonly BlossomTokenValidator tokenValidator;
+        private readonly IBlossomManagerService blossomManager;
+        private readonly IModerationCache moderationCache;
         private readonly BlossomOptions options;
         private readonly ILogger<BlossomController> logger;
 
         public BlossomController(
             IBlobStorageService blobStorage,
             BlossomTokenValidator tokenValidator,
+            IBlossomManagerService blossomManager,
+            IModerationCache moderationCache,
             IOptions<BlossomOptions> options,
             ILogger<BlossomController> logger)
         {
             this.blobStorage = blobStorage;
             this.tokenValidator = tokenValidator;
+            this.blossomManager = blossomManager;
+            this.moderationCache = moderationCache;
             this.options = options.Value;
             this.logger = logger;
         }
@@ -30,7 +38,7 @@ namespace Netstr.Controllers
         /// <summary>
         /// BUD-01: GET /{sha256}.ext - Retrieve blob (with file extension)
         /// </summary>
-        [HttpGet("{sha256}.{ext}")]
+        [HttpGet("{sha256:regex(^[[a-fA-F0-9]]{{64}}$)}.{ext}")]
         public Task<IActionResult> GetBlobWithExt(string sha256) => GetBlobCore(sha256);
 
         /// <summary>
@@ -41,6 +49,11 @@ namespace Netstr.Controllers
 
         private async Task<IActionResult> GetBlobCore(string sha256)
         {
+            if (string.IsNullOrWhiteSpace(sha256) || sha256.Length != 64 || !sha256.All(Uri.IsHexDigit))
+            {
+                return NotFound();
+            }
+
             sha256 = sha256.ToLowerInvariant();
 
             try
@@ -51,6 +64,14 @@ namespace Netstr.Controllers
                 Response.Headers["Content-Length"] = size.ToString();
                 Response.Headers["Accept-Ranges"] = "bytes";
                 Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
+
+                if (contentType.Contains("html", StringComparison.OrdinalIgnoreCase) ||
+                    contentType.Contains("svg", StringComparison.OrdinalIgnoreCase) ||
+                    contentType.Contains("javascript", StringComparison.OrdinalIgnoreCase))
+                {
+                    Response.Headers["Content-Disposition"] = "attachment";
+                }
 
                 return File(stream, contentType);
             }
@@ -63,7 +84,7 @@ namespace Netstr.Controllers
         /// <summary>
         /// BUD-01: HEAD /{sha256}.ext - Check blob exists (with file extension)
         /// </summary>
-        [HttpHead("{sha256}.{ext}")]
+        [HttpHead("{sha256:regex(^[[a-fA-F0-9]]{{64}}$)}.{ext}")]
         public Task<IActionResult> HeadBlobWithExt(string sha256) => HeadBlobCore(sha256);
 
         /// <summary>
@@ -74,6 +95,11 @@ namespace Netstr.Controllers
 
         private async Task<IActionResult> HeadBlobCore(string sha256)
         {
+            if (string.IsNullOrWhiteSpace(sha256) || sha256.Length != 64 || !sha256.All(Uri.IsHexDigit))
+            {
+                return NotFound();
+            }
+
             sha256 = sha256.ToLowerInvariant();
 
             var exists = await this.blobStorage.BlobExistsAsync(sha256);
@@ -90,6 +116,7 @@ namespace Netstr.Controllers
                 Response.Headers["Content-Length"] = size.ToString();
                 Response.Headers["Accept-Ranges"] = "bytes";
                 Response.Headers["Cache-Control"] = "public, max-age=31536000, immutable";
+                Response.Headers["X-Content-Type-Options"] = "nosniff";
 
                 return Ok();
             }
@@ -110,11 +137,21 @@ namespace Netstr.Controllers
                 return StatusCode(503);
             }
 
+            // Emergency killswitch or read-only mode
+            if (!this.blossomManager.UploadsEnabled || this.blossomManager.AccessMode == "ReadOnly")
+            {
+                Response.Headers["X-Reason"] = "Uploads are temporarily paused by relay operator";
+                return StatusCode(503);
+            }
+
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
+
             // Validate auth token
             var authResult = this.tokenValidator.Validate(
                 Request.Headers["Authorization"].FirstOrDefault(),
                 "upload",
-                Request.Headers["X-SHA-256"].FirstOrDefault()?.ToLowerInvariant());
+                Request.Headers["X-SHA-256"].FirstOrDefault()?.ToLowerInvariant(),
+                baseUrl);
 
             if (!authResult.IsValid)
             {
@@ -122,7 +159,46 @@ namespace Netstr.Controllers
                 return Unauthorized();
             }
 
-            // check content length as early hint (but we enforce on actual bytes read!)
+            var pubkey = authResult.PublicKey!;
+
+            // Moderation check: is pubkey banned from relay?
+            if (this.moderationCache.IsPubkeyBanned(pubkey, out var banReason))
+            {
+                Response.Headers["X-Reason"] = $"Pubkey is banned: {banReason ?? "Restricted"}";
+                return StatusCode(403);
+            }
+
+            // Moderation check: is pubkey banned from Blossom uploads?
+            if (this.moderationCache.IsBlossomUploadBanned(pubkey, out var uploadBanReason))
+            {
+                Response.Headers["X-Reason"] = $"Blossom uploads forbidden for this pubkey: {uploadBanReason ?? "Restricted"}";
+                return StatusCode(403);
+            }
+
+            // Whitelist-only access mode check
+            if (this.blossomManager.AccessMode == "WhitelistedOnly" && !this.moderationCache.IsPubkeyWhitelisted(pubkey))
+            {
+                Response.Headers["X-Reason"] = "Blossom access restricted to whitelisted pubkeys";
+                return StatusCode(403);
+            }
+
+            // check MIME type from request header
+            var rawContentType = Request.ContentType ?? "application/octet-stream";
+            var mediaType = rawContentType.Split(';')[0].Trim().ToLowerInvariant();
+
+            if (options.BlockedMimeTypes.Length > 0 && options.BlockedMimeTypes.Any(m => mediaType.Equals(m.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                Response.Headers["X-Reason"] = $"MIME type '{mediaType}' is blocked by this server";
+                return StatusCode(415);
+            }
+
+            if (options.AllowedMimeTypes.Length > 0 && !options.AllowedMimeTypes.Any(m => mediaType.Equals(m.Trim(), StringComparison.OrdinalIgnoreCase)))
+            {
+                Response.Headers["X-Reason"] = $"MIME type '{mediaType}' is not allowed by this server";
+                return StatusCode(415);
+            }
+
+            // check content length as early hint (enforced on actual bytes read below)
             if (Request.ContentLength.HasValue && Request.ContentLength.Value > options.MaxUploadSizeBytes)
             {
                 Response.Headers["X-Reason"] = $"File too large, max {options.MaxUploadSizeBytes} bytes";
@@ -140,13 +216,26 @@ namespace Netstr.Controllers
                 }
             }
 
-            // check per-user storage quota
-            if (options.MaxStoragePerUserBytes > 0)
+            // check per-user storage quota (custom override takes precedence)
+            var hasCustomQuota = this.moderationCache.TryGetCustomStorageQuota(pubkey, out var effectiveUserQuota);
+            if (!hasCustomQuota)
             {
-                var userUsed = await this.blobStorage.GetUserStorageUsedAsync(authResult.PublicKey!);
-                if (userUsed >= options.MaxStoragePerUserBytes)
+                effectiveUserQuota = options.MaxStoragePerUserBytes;
+            }
+
+            if (hasCustomQuota && effectiveUserQuota == 0)
+            {
+                Response.Headers["X-Reason"] = "User storage quota is 0 (uploads disabled for this user)";
+                return StatusCode(403);
+            }
+
+            long userUsed = 0;
+            if (effectiveUserQuota > 0)
+            {
+                userUsed = await this.blobStorage.GetUserStorageUsedAsync(pubkey);
+                if (userUsed >= effectiveUserQuota)
                 {
-                    Response.Headers["X-Reason"] = "User storage quota exceeded";
+                    Response.Headers["X-Reason"] = $"User storage quota exceeded ({userUsed}/{effectiveUserQuota} bytes)";
                     return StatusCode(507);
                 }
             }
@@ -193,12 +282,49 @@ namespace Netstr.Controllers
                     return StatusCode(409);
                 }
 
-                // MIME type from client header (used for metadata only, not enforced server-side)
-                var contentType = Request.ContentType ?? "application/octet-stream";
+                // Sniff MIME type from file content if client didn't specify or sent generic octet-stream
+                if (mediaType is "application/octet-stream" or "binary/octet-stream" or "")
+                {
+                    var sniffed = Services.BlossomManagerService.SniffMimeType(tempPath, mediaType);
+                    if (sniffed != "application/octet-stream")
+                    {
+                        mediaType = sniffed;
+                    }
+                }
+
+                if (options.AllowedMimeTypes.Length > 0 && !options.AllowedMimeTypes.Any(m => mediaType.Equals(m.Trim(), StringComparison.OrdinalIgnoreCase)) && mediaType != "application/octet-stream")
+                {
+                    Response.Headers["X-Reason"] = $"Detected MIME type '{mediaType}' is not allowed by this server";
+                    return StatusCode(415);
+                }
+
+                // verify file magic bytes to prevent disguised executable uploads
+                var (isValidMagic, magicError) = VerifyBlobMagicBytes(tempPath, mediaType);
+                if (!isValidMagic)
+                {
+                    Response.Headers["X-Reason"] = magicError ?? "Invalid file content for declared MIME type";
+                    return StatusCode(415);
+                }
+
+                // check if the uploaded size would exceed user or total quota
+                if (effectiveUserQuota > 0 && userUsed + totalBytesRead > effectiveUserQuota)
+                {
+                    Response.Headers["X-Reason"] = $"Upload exceeds user storage quota ({userUsed + totalBytesRead}/{effectiveUserQuota} bytes)";
+                    return StatusCode(507);
+                }
+
+                if (options.MaxTotalStorageBytes > 0)
+                {
+                    var totalUsed = await this.blobStorage.GetTotalStorageUsedAsync();
+                    if (totalUsed + totalBytesRead > options.MaxTotalStorageBytes)
+                    {
+                        Response.Headers["X-Reason"] = "Upload exceeds server storage quota";
+                        return StatusCode(507);
+                    }
+                }
 
                 // store blob
-                var baseUrl = $"{Request.Scheme}://{Request.Host}";
-                var descriptor = await this.blobStorage.StoreBlobAsync(sha256, tempPath, contentType, authResult.PublicKey!, baseUrl);
+                var descriptor = await this.blobStorage.StoreBlobAsync(sha256, tempPath, mediaType, authResult.PublicKey!, baseUrl);
 
                 Response.Headers["X-SHA-256"] = sha256;
 
@@ -219,8 +345,9 @@ namespace Netstr.Controllers
         [HttpHead("upload")]
         public IActionResult HeadUpload()
         {
-            if (!options.Enabled)
+            if (!options.Enabled || !this.blossomManager.UploadsEnabled || this.blossomManager.AccessMode == "ReadOnly")
             {
+                Response.Headers["X-Reason"] = "Uploads are temporarily paused by relay operator";
                 return StatusCode(503);
             }
 
@@ -245,9 +372,12 @@ namespace Netstr.Controllers
                 return StatusCode(503);
             }
 
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var authResult = this.tokenValidator.Validate(
                 Request.Headers["Authorization"].FirstOrDefault(),
-                "list");
+                "list",
+                null,
+                baseUrl);
 
             if (!authResult.IsValid)
             {
@@ -255,12 +385,18 @@ namespace Netstr.Controllers
                 return Unauthorized();
             }
 
-            var used = await this.blobStorage.GetUserStorageUsedAsync(authResult.PublicKey!);
+            var pubkey = authResult.PublicKey!;
+            var used = await this.blobStorage.GetUserStorageUsedAsync(pubkey);
+            var maxQuota = this.moderationCache.TryGetCustomStorageQuota(pubkey, out var customQuota)
+                ? customQuota
+                : options.MaxStoragePerUserBytes;
 
             return Ok(new
             {
                 used,
-                max = options.MaxStoragePerUserBytes
+                max = maxQuota,
+                upload_banned = this.moderationCache.IsBlossomUploadBanned(pubkey, out _),
+                uploads_enabled = this.blossomManager.UploadsEnabled && this.blossomManager.AccessMode != "ReadOnly"
             });
         }
 
@@ -276,11 +412,13 @@ namespace Netstr.Controllers
             }
 
             sha256 = sha256.ToLowerInvariant();
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
 
             var authResult = this.tokenValidator.Validate(
                 Request.Headers["Authorization"].FirstOrDefault(),
                 "delete",
-                sha256);
+                sha256,
+                baseUrl);
 
             if (!authResult.IsValid)
             {
@@ -304,9 +442,12 @@ namespace Netstr.Controllers
         [HttpGet("list")]
         public async Task<IActionResult> ListBlobs([FromQuery] string? cursor = null, [FromQuery] int limit = 100)
         {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var authResult = this.tokenValidator.Validate(
                 Request.Headers["Authorization"].FirstOrDefault(),
-                "list");
+                "list",
+                null,
+                baseUrl);
 
             if (!authResult.IsValid)
             {
@@ -314,7 +455,6 @@ namespace Netstr.Controllers
                 return Unauthorized();
             }
 
-            var baseUrl = $"{Request.Scheme}://{Request.Host}";
             var blobs = await this.blobStorage.ListBlobsAsync(authResult.PublicKey!, cursor, Math.Min(limit, 1000), baseUrl);
 
             return Ok(blobs);
@@ -335,6 +475,81 @@ namespace Netstr.Controllers
                 blocked_types = options.BlockedMimeTypes,
                 auth_required = options.AuthRequired
             });
+        }
+
+        private static (bool IsValid, string? Error) VerifyBlobMagicBytes(string filePath, string mediaType)
+        {
+            try
+            {
+                var buffer = new byte[16];
+                int read;
+                using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    read = fs.Read(buffer, 0, buffer.Length);
+                }
+
+                if (read >= 2 && buffer[0] == 0x4D && buffer[1] == 0x5A) // MZ (Windows PE / EXE)
+                {
+                    return (false, "Executable binaries are forbidden");
+                }
+
+                if (read >= 4 && buffer[0] == 0x7F && buffer[1] == 0x45 && buffer[2] == 0x4C && buffer[3] == 0x46) // \x7fELF
+                {
+                    return (false, "Executable binaries are forbidden");
+                }
+
+                if (read >= 4 && ((buffer[0] == 0xFE && buffer[1] == 0xED && buffer[2] == 0xFA && buffer[3] == 0xCE) ||
+                                  (buffer[0] == 0xFE && buffer[1] == 0xED && buffer[2] == 0xFA && buffer[3] == 0xCF) ||
+                                  (buffer[0] == 0xCE && buffer[1] == 0xFA && buffer[2] == 0xED && buffer[3] == 0xFE) ||
+                                  (buffer[0] == 0xCF && buffer[1] == 0xFA && buffer[2] == 0xED && buffer[3] == 0xFE))) // Mach-O
+                {
+                    return (false, "Executable binaries are forbidden");
+                }
+
+                if (mediaType == "image/png")
+                {
+                    if (read < 8 || buffer[0] != 0x89 || buffer[1] != 0x50 || buffer[2] != 0x4E || buffer[3] != 0x47 ||
+                        buffer[4] != 0x0D || buffer[5] != 0x0A || buffer[6] != 0x1A || buffer[7] != 0x0A)
+                    {
+                        return (false, "Content does not match image/png format");
+                    }
+                }
+                else if (mediaType == "image/jpeg")
+                {
+                    if (read < 3 || buffer[0] != 0xFF || buffer[1] != 0xD8 || buffer[2] != 0xFF)
+                    {
+                        return (false, "Content does not match image/jpeg format");
+                    }
+                }
+                else if (mediaType == "image/gif")
+                {
+                    if (read < 4 || buffer[0] != 0x47 || buffer[1] != 0x49 || buffer[2] != 0x46 || buffer[3] != 0x38)
+                    {
+                        return (false, "Content does not match image/gif format");
+                    }
+                }
+                else if (mediaType == "image/webp")
+                {
+                    if (read < 12 || buffer[0] != 0x52 || buffer[1] != 0x49 || buffer[2] != 0x46 || buffer[3] != 0x46 ||
+                        buffer[8] != 0x57 || buffer[9] != 0x45 || buffer[10] != 0x42 || buffer[11] != 0x50)
+                    {
+                        return (false, "Content does not match image/webp format");
+                    }
+                }
+                else if (mediaType == "application/pdf")
+                {
+                    if (read < 5 || buffer[0] != 0x25 || buffer[1] != 0x50 || buffer[2] != 0x44 || buffer[3] != 0x46 || buffer[4] != 0x2D)
+                    {
+                        return (false, "Content does not match application/pdf format");
+                    }
+                }
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                return (false, "Failed to verify file integrity: " + ex.Message);
+            }
         }
     }
 }

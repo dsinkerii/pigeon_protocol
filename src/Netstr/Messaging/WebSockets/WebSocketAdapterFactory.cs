@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using Netstr.Messaging.Negentropy;
 using Netstr.Messaging.Subscriptions;
 using Netstr.Options;
@@ -14,6 +14,7 @@ namespace Netstr.Messaging.WebSockets
         private readonly IOptions<AuthOptions> auth;
         private readonly IMessageDispatcher dispatcher;
         private readonly IWebSocketAdapterCollection tracker;
+        private readonly ITrafficTracker trafficTracker;
         private readonly IHostApplicationLifetime lifetime;
         private readonly INegentropyAdapterFactory negentropyFactory;
         private readonly ISubscriptionsAdapterFactory subscriptionsFactory;
@@ -24,6 +25,7 @@ namespace Netstr.Messaging.WebSockets
             IOptions<AuthOptions> auth,
             IMessageDispatcher dispatcher,
             IWebSocketAdapterCollection tracker,
+            ITrafficTracker trafficTracker,
             IHostApplicationLifetime lifetime,
             INegentropyAdapterFactory negentropyFactory,
             ISubscriptionsAdapterFactory subscriptionsFactory)
@@ -33,6 +35,7 @@ namespace Netstr.Messaging.WebSockets
             this.auth = auth;
             this.dispatcher = dispatcher;
             this.tracker = tracker;
+            this.trafficTracker = trafficTracker;
             this.lifetime = lifetime;
             this.negentropyFactory = negentropyFactory;
             this.subscriptionsFactory = subscriptionsFactory;
@@ -45,6 +48,7 @@ namespace Netstr.Messaging.WebSockets
                 this.limits,
                 this.auth,
                 this.dispatcher,
+                this.trafficTracker,
                 this.negentropyFactory,
                 this.subscriptionsFactory,
                 this.lifetime.ApplicationStopping,

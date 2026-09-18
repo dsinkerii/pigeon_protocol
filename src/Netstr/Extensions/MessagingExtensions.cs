@@ -1,4 +1,4 @@
-﻿using Netstr.Messaging;
+using Netstr.Messaging;
 using Netstr.Messaging.Events;
 using Netstr.Messaging.Events.Handlers;
 using Netstr.Messaging.Events.Handlers.Replaceable;
@@ -19,6 +19,8 @@ namespace Netstr.Extensions
         {
             services.AddSingleton<WebSocketAdapterFactory>();
             services.AddSingleton<IWebSocketAdapterCollection, WebSocketAdapterCollection>();
+            services.AddSingleton<ITrafficTracker, TrafficTracker>();
+            services.AddSingleton<IModerationCache, ModerationCache>();
             services.AddSingleton<IUserCache, UserCache>();
             services.AddTransient<ICleanupService, CleanupService>();
 
@@ -51,6 +53,8 @@ namespace Netstr.Extensions
             // RegularEventHandler needs to go last
             services.AddSingleton<IEventHandler, RegularEventHandler>();
 
+            services.AddSingleton<VanishExecutionService>();
+
             services.AddEventValidators();
             services.AddSubscriptionValidators();
 
@@ -59,6 +63,7 @@ namespace Netstr.Extensions
 
         public static IServiceCollection AddEventValidators(this IServiceCollection services)
         {
+            services.AddSingleton<IEventValidator, ModerationEventValidator>();
             services.AddSingleton<IEventValidator, EventHashValidator>();
             services.AddSingleton<IEventValidator, EventSignatureValidator>();
             services.AddSingleton<IEventValidator, EventPowValidator>();

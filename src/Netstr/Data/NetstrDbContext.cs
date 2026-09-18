@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace Netstr.Data
@@ -22,6 +22,20 @@ namespace Netstr.Data
         public DbSet<BlobEntity> Blobs { get; set; }
 
         public DbSet<NotificationTokenEntity> NotificationTokens { get; set; }
+
+        public DbSet<PendingVanishEntity> PendingVanishes { get; set; }
+
+        public DbSet<AdminUserEntity> AdminUsers { get; set; }
+
+        public DbSet<PubkeyRuleEntity> PubkeyRules { get; set; }
+
+        public DbSet<BannedEventEntity> BannedEvents { get; set; }
+
+        public DbSet<ModerationReportEntity> ModerationReports { get; set; }
+
+        public DbSet<ModerationAppealEntity> ModerationAppeals { get; set; }
+
+        public DbSet<ModerationAuditLogEntity> ModerationAuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -69,6 +83,52 @@ namespace Netstr.Data
                 e.HasKey(x => x.Id);
                 e.HasIndex(x => x.Token).IsUnique();
                 e.HasIndex(x => x.Pubkey);
+            });
+
+            builder.Entity<PendingVanishEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => new { x.Pubkey, x.WillEventId }).IsUnique();
+                e.HasIndex(x => x.Pubkey);
+            });
+
+            builder.Entity<AdminUserEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.Username).IsUnique();
+            });
+
+            builder.Entity<PubkeyRuleEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.PublicKey).IsUnique();
+            });
+
+            builder.Entity<BannedEventEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.EventId).IsUnique();
+            });
+
+            builder.Entity<ModerationReportEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.TargetPubkey);
+                e.HasIndex(x => x.TargetEventId);
+                e.HasIndex(x => x.Status);
+            });
+
+            builder.Entity<ModerationAppealEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.AppellantPubkey);
+                e.HasIndex(x => x.Status);
+            });
+
+            builder.Entity<ModerationAuditLogEntity>(e =>
+            {
+                e.HasKey(x => x.Id);
+                e.HasIndex(x => x.Timestamp);
             });
         }
 

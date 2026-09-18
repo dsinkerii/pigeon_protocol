@@ -1,4 +1,4 @@
-﻿using System.Net.WebSockets;
+using System.Net.WebSockets;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Netstr.Options;
@@ -16,6 +16,7 @@ namespace Netstr.Messaging.WebSockets
         private readonly IOptions<LimitsOptions> limits;
         private readonly IOptions<AuthOptions> auth;
         private readonly IMessageDispatcher dispatcher;
+        private readonly ITrafficTracker trafficTracker;
         private readonly WebSocket ws;
         private readonly Channel<MessageBatch> sendChannel;
         private CancellationToken cancellationToken;
@@ -31,11 +32,28 @@ namespace Netstr.Messaging.WebSockets
             WebSocket ws,
             IHeaderDictionary headers,
             ConnectionInfo connectionInfo)
+            : this(logger, limits, auth, dispatcher, new TrafficTracker(), negentropyFactory, subscriptionsFactory, cancellationToken, ws, headers, connectionInfo)
+        {
+        }
+
+        public WebSocketAdapter(
+            ILogger<WebSocketAdapter> logger,
+            IOptions<LimitsOptions> limits,
+            IOptions<AuthOptions> auth,
+            IMessageDispatcher dispatcher,
+            ITrafficTracker trafficTracker,
+            INegentropyAdapterFactory negentropyFactory,
+            ISubscriptionsAdapterFactory subscriptionsFactory,
+            CancellationToken cancellationToken,
+            WebSocket ws,
+            IHeaderDictionary headers,
+            ConnectionInfo connectionInfo)
         {
             this.logger = logger;
             this.limits = limits;
             this.auth = auth;
             this.dispatcher = dispatcher;
+            this.trafficTracker = trafficTracker;
             this.cancellationToken = cancellationToken;
             this.ws = ws;
             this.sendChannel = Channel.CreateBounded<MessageBatch>(
@@ -59,6 +77,22 @@ namespace Netstr.Messaging.WebSockets
         public void Send(MessageBatch batch)
         {
             this.sendChannel.Writer.TryWrite(batch);
+        }
+
+        public async Task CloseAsync(string reason)
+        {
+            try
+            {
+                if (this.ws.State == WebSocketState.Open)
+                {
+                    this.SendNotice($"closed by admin: {reason}");
+                    await this.ws.CloseAsync(WebSocketCloseStatus.NormalClosure, reason, CancellationToken.None);
+                }
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogWarning(ex, $"Failed to close WebSocket for client {Context.ClientId}");
+            }
         }
 
         public async Task StartAsync()
@@ -102,6 +136,11 @@ namespace Netstr.Messaging.WebSockets
                     if (result.MessageType == WebSocketMessageType.Close)
                     {
                         return;
+                    }
+
+                    if (result.Count > 0)
+                    {
+                        this.trafficTracker.TrackInbound(result.Count);
                     }
 
                     if (!result.EndOfMessage)
@@ -148,6 +187,7 @@ namespace Netstr.Messaging.WebSockets
                     try
                     {
                         await this.ws.SendAsync(message, WebSocketMessageType.Text, true, cancellationToken);
+                        this.trafficTracker.TrackOutbound(message.Length);
                     }
                     catch (WebSocketException ex)
                     {

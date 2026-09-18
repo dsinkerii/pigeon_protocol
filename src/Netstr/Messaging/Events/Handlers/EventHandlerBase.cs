@@ -12,15 +12,18 @@ namespace Netstr.Messaging.Events.Handlers
         protected readonly ILogger<EventHandlerBase> logger;
         protected readonly IOptions<AuthOptions> auth;
         protected readonly IWebSocketAdapterCollection adapters;
+        protected readonly IUserCache? userCache;
 
         protected EventHandlerBase(
             ILogger<EventHandlerBase> logger,
             IOptions<AuthOptions> auth,
-            IWebSocketAdapterCollection adapters)
+            IWebSocketAdapterCollection adapters,
+            IUserCache? userCache = null)
         {
             this.logger = logger;
             this.auth = auth;
             this.adapters = adapters;
+            this.userCache = userCache;
         }
 
         public async Task HandleEventAsync(IWebSocketAdapter sender, Event e)
@@ -44,9 +47,14 @@ namespace Netstr.Messaging.Events.Handlers
         {
             var adapters = this.adapters.GetAll();
 
+            // Inject vanish fields for kind-0 broadcasts
+            var eventToBroadcast = this.userCache != null && e.Kind == 0
+                ? VanishProfileHelper.InjectVanishFields(e, this.userCache)
+                : e;
+
             foreach (var adapter in adapters)
             {
-                BroadcastEventForAdapterAsync(adapter, e);
+                BroadcastEventForAdapterAsync(adapter, eventToBroadcast);
             }
         }
 
@@ -60,7 +68,6 @@ namespace Netstr.Messaging.Events.Handlers
             {
                 this.logger.LogInformation($"Not going to broadcast event {e.Id}");
 
-                // not going to send the event to this client
                 return;
             }
 

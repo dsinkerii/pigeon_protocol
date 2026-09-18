@@ -184,13 +184,20 @@ namespace Netstr.Controllers
             await using var db = await this.dbFactory.CreateDbContextAsync();
 
             var tokenEntity = await db.NotificationTokens
-                .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Token == token);
 
             if (tokenEntity == null) return null;
 
             var cutoff = DateTimeOffset.UtcNow.AddDays(-this.options.Value.TokenLifetimeDays);
-            if (tokenEntity.LastAuthAt < cutoff) return null;
+            if (tokenEntity.LastAuthAt < cutoff)
+            {
+                db.NotificationTokens.Remove(tokenEntity);
+                await db.SaveChangesAsync();
+                return null;
+            }
+
+            tokenEntity.LastAuthAt = DateTimeOffset.UtcNow;
+            await db.SaveChangesAsync();
 
             return tokenEntity.Pubkey;
         }

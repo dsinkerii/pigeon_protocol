@@ -1,4 +1,5 @@
 ﻿using NBitcoin.Secp256k1;
+using Netstr.Json;
 using Netstr.Messaging.Models;
 using System.Text.Json;
 
@@ -6,6 +7,11 @@ namespace Netstr.Tests.NIPs
 {
     public static class Helpers
     {
+        private static JsonSerializerOptions serializerOptions = new JsonSerializerOptions
+        {
+            Encoder = new NostrJsonEncoder()
+        };
+
         /// <summary>
         /// If the <paramref name="verify"/> action throws it wait for <paramref name="delay"/> amount of time and tries again.
         /// </summary>
@@ -44,7 +50,7 @@ namespace Netstr.Tests.NIPs
                 e.Content
             ];
 
-            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(obj))).ToLower();
+            return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(obj, serializerOptions))).ToLower();
         }
 
         public static Event FinalizeEvent(Event e, string privateKey)

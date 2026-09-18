@@ -1,0 +1,3895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unitaz Relay Manager | 3x-ui Style Control Panel</title>
+  <link rel="icon" type="image/png" href="/greg.png" />
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #141a24;
+      --card-border: #232d3d;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #0d131e;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.025em;
+    }
+    .brand-badge {
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      color: #fff;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(52, 211, 153, 0.1);
+      color: var(--success);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 8px var(--success);
+    }
+    nav.tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: #090d14;
+      padding: 0.5rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      overflow-x: auto;
+    }
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      background: rgba(255,255,255,0.04);
+    }
+    .tab-btn.active {
+      background: var(--card-bg);
+      color: var(--primary);
+      border-color: var(--card-border);
+    }
+    main {
+      flex: 1;
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .grid-form-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      margin-bottom: 1.25rem;
+    }
+    .card-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+    }
+    .stat-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: #232d3d;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.75rem;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #38bdf8, #818cf8);
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    th, td {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--card-border);
+    }
+    th {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: rgba(0,0,0,0.15);
+    }
+    tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+    .mono {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-banned { background: rgba(248, 113, 113, 0.2); color: var(--danger); }
+    .badge-whitelisted { background: rgba(52, 211, 153, 0.2); color: var(--success); }
+    .badge-allowed { background: rgba(56, 189, 248, 0.2); color: var(--primary); }
+    .badge-pending { background: rgba(251, 191, 36, 0.2); color: var(--warning); }
+    .btn {
+      background: #232d3d;
+      color: var(--text);
+      border: 1px solid #334155;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+    .btn:hover { background: #334155; }
+    .btn-primary { background: var(--primary); color: #0b0f17; border: none; font-weight: 600; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-danger { background: rgba(248, 113, 113, 0.15); color: var(--danger); border-color: rgba(248, 113, 113, 0.3); }
+    .btn-danger:hover { background: rgba(248, 113, 113, 0.3); }
+    .btn-sm { padding: 0.25rem 0.55rem; font-size: 0.75rem; }
+    
+    .input-field {
+      width: 100%;
+      background: #0b0f17;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      padding: 0.6rem 0.8rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-top: 0.35rem;
+      margin-bottom: 0.75rem;
+      transition: border-color 0.15s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .input-group {
+      margin-bottom: 0.5rem;
+    }
+
+    /* TOOLTIP SYSTEM */
+    .field-label {
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-weight: 500;
+    }
+    .tip-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      cursor: help;
+    }
+    .tip-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: #1e293b;
+      border: 1px solid #475569;
+      color: #38bdf8;
+      font-size: 10px;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .tip-wrap:hover .tip-icon {
+      background: #38bdf8;
+      color: #0b0f17;
+      border-color: #38bdf8;
+    }
+    .tip-box {
+      opacity: 0;
+      visibility: hidden;
+      position: absolute;
+      bottom: 130%;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      color: #f8fafc;
+      padding: 0.65rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      width: 290px;
+      z-index: 500;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.85);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+    .tip-box code {
+      color: #38bdf8;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+    .tip-wrap:hover .tip-box {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(0);
+    }
+    .tip-def {
+      margin-top: 0.35rem;
+      color: #94a3b8;
+      font-size: 0.7rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 0.25rem;
+    }
+
+    /* GRID EXTENSIONS */
+    .grid-form-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+    }
+    .grid-form-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+    @media (max-width: 850px) {
+      .grid-form-2, .grid-form-3, .grid-form-4 {
+        grid-template-columns: 1fr !important;
+      }
+    }
+
+    /* NIP BADGES */
+    .nip-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.75rem;
+    }
+    .nip-chip {
+      background: #0b0f17;
+      border: 1px solid #2d3748;
+      color: #94a3b8;
+      padding: 0.35rem 0.65rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      user-select: none;
+      transition: all 0.15s;
+    }
+    .nip-chip:hover {
+      border-color: #475569;
+      color: var(--text);
+    }
+    .nip-chip.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--primary);
+      color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* CATEGORY NAV PILLS */
+    .config-cat-nav {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+      background: rgba(0,0,0,0.2);
+      padding: 0.5rem;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+    .config-cat-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .config-cat-btn:hover {
+      background: #1e293b;
+      color: var(--text);
+    }
+    .config-cat-btn.active {
+      background: rgba(56, 189, 248, 0.18);
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    /* ADVANCED RAW JSON LAYOUT & SCHEMA HINTS */
+    .raw-editor-layout {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 1rem;
+    }
+    @media (max-width: 950px) {
+      .raw-editor-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+    .hints-panel {
+      background: #070a0f;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 0.85rem;
+      height: 600px;
+      display: flex;
+      flex-direction: column;
+    }
+    .hints-search {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 0.45rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-bottom: 0.75rem;
+    }
+    .hints-search:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .hints-list {
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      padding-right: 4px;
+    }
+    .hint-item {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 0.5rem 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .hint-item:hover {
+      border-color: var(--primary);
+      background: #172554;
+    }
+    .hint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+    .hint-key {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #38bdf8;
+      word-break: break-all;
+    }
+    .hint-type {
+      font-size: 0.65rem;
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.06);
+      color: #94a3b8;
+      font-family: var(--font-mono);
+    }
+    .hint-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      line-height: 1.3;
+    }
+    .hint-def {
+      font-size: 0.7rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+      font-family: var(--font-mono);
+    }
+
+    /* SUBTABS */
+    .subtabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 0.75rem;
+      align-items: center;
+    }
+    .subtab-btn {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.9rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .subtab-btn:hover {
+      color: var(--text);
+      background: #1e293b;
+    }
+    .subtab-btn.active {
+      background: #232d3d;
+      color: var(--primary);
+      border-color: var(--primary);
+      font-weight: 600;
+    }
+
+    .terminal {
+      background: #070a0f;
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      height: 480px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.4;
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    }
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: #1e293b;
+      border: 1px solid #334155;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      z-index: 200;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .modal-card-lg {
+      max-width: 680px;
+    }
+    .blossom-thumb-box {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+      background: #090e17;
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+    .blossom-thumb-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .badge-cat-image { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .badge-cat-audio { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-cat-video { background: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .badge-cat-doc { background: rgba(234, 179, 8, 0.15); color: #facc15; border: 1px solid rgba(234, 179, 8, 0.3); }
+    .badge-cat-other { background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); }
+    .btn-warn {
+      background: rgba(251, 191, 36, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
+    .btn-warn:hover {
+      background: rgba(251, 191, 36, 0.3);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand">
+      <img src="/greg.png" alt="Greg" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover;" />
+      <span class="brand-badge">UNITAZ-UI</span>
+      <span>Libregram Relay Manager</span>
+      <div class="status-pill">
+        <div class="status-dot"></div>
+        <span id="header-status">ONLINE</span>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <span id="header-user" style="font-size: 0.85rem; color: var(--text-muted);">admin</span>
+      <button class="btn btn-sm" onclick="logout()">Logout</button>
+    </div>
+  </header>
+
+  <!-- NAVIGATION TABS -->
+  <nav class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('clients')">👥 Clients (<span id="tab-client-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('pubkeys')">🔑 Pubkeys & Bans</button>
+    <button class="tab-btn" onclick="switchTab('moderation')">🛡️ Reports (<span id="tab-report-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('appeals')">⚖️ Appeals (<span id="tab-appeal-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('blossom')">🌸 Blossom Media (<span id="tab-blossom-count">0</span>)</button>
+    <button class="tab-btn" onclick="switchTab('settings')">⚙️ Relay Config</button>
+    <button class="tab-btn" onclick="switchTab('logs')">📜 Live Logs</button>
+  </nav>
+
+  <!-- MAIN VIEW CONTAINER -->
+  <main>
+
+    <!-- 1. DASHBOARD VIEW -->
+    <section id="view-dashboard">
+      <div class="grid-4">
+        <div class="card">
+          <div class="card-title">CPU Utilization</div>
+          <div class="stat-val" id="stat-cpu">0.0%</div>
+          <div class="progress-bar"><div class="progress-fill" id="bar-cpu"></div></div>
+          <div class="stat-sub" id="stat-dotnet">.NET Runtime</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Memory Allocation</div>
+          <div class="stat-val" id="stat-ram">0 MB</div>
+          <div class="progress-bar"><div class="progress-fill" id="bar-ram"></div></div>
+          <div class="stat-sub" id="stat-ram-sub">GC Heap: 0 MB</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Connected Clients</div>
+          <div class="stat-val" id="stat-conns">0</div>
+          <div class="stat-sub" id="stat-conns-sub">0 Authenticated · 0 Subscriptions</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Network Throughput</div>
+          <div class="stat-val" id="stat-bandwidth">0 KB/s</div>
+          <div class="stat-sub" id="stat-traffic-sub">↓ 0 MB  ↑ 0 MB</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">Storage & Volume</div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">PostgreSQL Events</span>
+              <span id="stat-events-count" class="mono" style="font-weight: 600;">0 events</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Database Size (PostgreSQL)</span>
+              <span id="stat-db-size" class="mono" style="font-weight: 600;">0 MB</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Blossom Media Files</span>
+              <span id="stat-blobs-count" class="mono" style="font-weight: 600;">0 files</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Blossom Storage Used</span>
+              <span id="stat-blobs-size" class="mono" style="font-weight: 600;">0 MB</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Node Environment & Uptime</div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Host OS Kernel</span>
+              <span id="stat-os" class="mono">Linux</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Relay Uptime</span>
+              <span id="stat-uptime" style="color: var(--success); font-weight: 600;">0s</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Process Started At</span>
+              <span id="stat-started" class="mono">-</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: var(--text-muted);">Pending Moderation Items</span>
+              <span id="stat-mod-summary" style="color: var(--warning); font-weight: 600;">0 reports / 0 appeals</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ACTIVE CLIENTS VIEW -->
+    <section id="view-clients" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span>Active WebSocket Connections</span>
+          <button class="btn btn-sm" onclick="fetchClients()">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Client ID</th>
+              <th>IP Address</th>
+              <th>Authenticated Pubkey</th>
+              <th>Connected Duration</th>
+              <th>Active Subs</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table-body">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading active connections...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 3. PUBKEYS & BANS VIEW -->
+    <section id="view-pubkeys" class="hidden">
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-title">Set Pubkey Rule / Ban / Whitelist</div>
+        <div style="display: grid; grid-template-columns: 2fr 1fr 2fr 1fr auto; gap: 0.75rem; align-items: end;">
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Pubkey (64 hex)</label>
+            <input id="rule-pubkey" class="input-field" placeholder="hex public key..." />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Status</label>
+            <select id="rule-status" class="input-field">
+              <option value="1">Banned (1)</option>
+              <option value="2">Whitelisted (2)</option>
+              <option value="0">Allowed (0)</option>
+            </select>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Reason</label>
+            <input id="rule-reason" class="input-field" placeholder="Spam, abuse, VIP..." />
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; color: var(--text-muted);">Quota (MB)</label>
+            <input id="rule-quota" type="number" class="input-field" placeholder="Optional" />
+          </div>
+          <button class="btn btn-primary" style="margin-bottom: 0.75rem;" onclick="savePubkeyRule()">Apply Rule</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Configured Pubkey Rules & Overrides</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Public Key</th>
+              <th>Status</th>
+              <th>Reason</th>
+              <th>Blossom Quota</th>
+              <th>Created At</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="pubkeys-table-body">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading rules...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 4. MODERATION REPORTS VIEW -->
+    <section id="view-moderation" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span>Trust & Safety: Moderation Reports (NIP-56 / Libregram)</span>
+          <button class="btn btn-sm" onclick="fetchReports()">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Category</th>
+              <th>Target Pubkey</th>
+              <th>Target Event ID</th>
+              <th>Report Content</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No reports found.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 5. APPEALS VIEW -->
+    <section id="view-appeals" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span>User Appeals Queue</span>
+          <button class="btn btn-sm" onclick="fetchAppeals()">Refresh</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Appellant Pubkey</th>
+              <th>Event ID</th>
+              <th>Appeal Statement</th>
+              <th>Status</th>
+              <th>Submitted At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="appeals-table-body">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No pending appeals.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 🌸 BLOSSOM MEDIA MANAGEMENT VIEW -->
+    <section id="view-blossom" class="hidden">
+
+      <!-- TOP METRIC CARDS & OPERATIONAL CONTROLS -->
+      <div class="grid-4" style="margin-bottom: 1.25rem;">
+        <!-- Card 1: Operational Status & Killswitch -->
+        <div class="card">
+          <div class="card-title">
+            <span>Operational Status</span>
+            <span id="blossom-status-badge" class="badge badge-whitelisted">● Uploads Active</span>
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.75rem;" id="blossom-status-desc">
+            Media uploads permitted. Files served via HTTP.
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <button id="blossom-killswitch-btn" class="btn btn-danger btn-sm" onclick="toggleBlossomKillswitch()">
+              🛑 Emergency Killswitch: Pause Uploads
+            </button>
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.25rem;">
+              <span style="font-size: 0.75rem; color: var(--text-muted); white-space: nowrap;">Access Mode:</span>
+              <select id="blossom-mode-select" class="input-field" style="margin: 0; padding: 0.25rem 0.5rem; font-size: 0.78rem;" onchange="changeBlossomAccessMode(this.value)">
+                <option value="Public">Public (Anyone can upload)</option>
+                <option value="WhitelistedOnly">Whitelisted Pubkeys Only</option>
+                <option value="ReadOnly">Read-Only (No uploads)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Storage Utilization -->
+        <div class="card">
+          <div class="card-title">Storage Utilization</div>
+          <div class="stat-val" id="blossom-storage-used">0 MB</div>
+          <div class="progress-bar"><div class="progress-fill" id="blossom-storage-bar" style="width: 0%;"></div></div>
+          <div class="stat-sub" id="blossom-storage-cap">Server Cap: Unlimited · User Limit: 500 MB</div>
+        </div>
+
+        <!-- Card 3: Catalog & Users -->
+        <div class="card">
+          <div class="card-title">Files & Uploaders</div>
+          <div class="stat-val" id="blossom-total-files">0 Files</div>
+          <div class="stat-sub" id="blossom-total-users">0 Unique Uploaders</div>
+          <div style="margin-top: 0.65rem; display: flex; gap: 0.5rem;">
+            <button class="btn btn-sm" onclick="fetchBlossomOverview()">↺ Refresh Stats</button>
+            <button class="btn btn-sm" onclick="switchBlossomSubtab('health')">🧹 Health Check</button>
+          </div>
+        </div>
+
+        <!-- Card 4: Media Breakdown -->
+        <div class="card">
+          <div class="card-title">Media Categories</div>
+          <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.78rem;">
+            <div style="display: flex; justify-content: space-between;">
+              <span>🖼️ Images</span>
+              <span id="blossom-cat-images" class="mono">0 (0 MB)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🎵 Audio</span>
+              <span id="blossom-cat-audio" class="mono">0 (0 MB)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>🎬 Video</span>
+              <span id="blossom-cat-video" class="mono">0 (0 MB)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>📄 Documents</span>
+              <span id="blossom-cat-docs" class="mono">0 (0 MB)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>📦 Other</span>
+              <span id="blossom-cat-other" class="mono">0 (0 MB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLOSSOM SUBTABS -->
+      <div class="subtabs">
+        <button id="blossom-subtab-btn-files" class="subtab-btn active" onclick="switchBlossomSubtab('files')">📁 Media Files Explorer</button>
+        <button id="blossom-subtab-btn-users" class="subtab-btn" onclick="switchBlossomSubtab('users')">👥 User Storage & Quotas</button>
+        <button id="blossom-subtab-btn-health" class="subtab-btn" onclick="switchBlossomSubtab('health')">🧹 Storage Health & Reconcile</button>
+      </div>
+
+      <!-- SUBTAB 1: FILES EXPLORER -->
+      <div id="blossom-sub-files">
+        <div class="card" style="margin-bottom: 1rem;">
+          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; justify-content: space-between;">
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: flex-end; flex: 1;">
+              <div style="flex: 2; min-width: 200px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Search SHA-256 or Pubkey</label>
+                <input id="blossom-search-query" class="input-field" style="margin-bottom: 0;" placeholder="Search hash prefix, hex pubkey..." onkeydown="if(event.key==='Enter') searchBlossomBlobs()" />
+              </div>
+              <div style="flex: 1; min-width: 120px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Category</label>
+                <select id="blossom-filter-cat" class="input-field" style="margin-bottom: 0;" onchange="searchBlossomBlobs()">
+                  <option value="">All Categories</option>
+                  <option value="image">Images</option>
+                  <option value="audio">Audio</option>
+                  <option value="video">Video</option>
+                  <option value="document">Documents</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div style="flex: 1; min-width: 120px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Size Threshold</label>
+                <select id="blossom-filter-size" class="input-field" style="margin-bottom: 0;" onchange="searchBlossomBlobs()">
+                  <option value="">Any Size</option>
+                  <option value="1048576">&gt; 1 MB</option>
+                  <option value="10485760">&gt; 10 MB</option>
+                  <option value="52428800">&gt; 50 MB</option>
+                  <option value="104857600">&gt; 100 MB</option>
+                </select>
+              </div>
+              <div style="flex: 1; min-width: 130px;">
+                <label style="font-size: 0.75rem; color: var(--text-muted);">Sort By</label>
+                <select id="blossom-filter-sort" class="input-field" style="margin-bottom: 0;" onchange="searchBlossomBlobs()">
+                  <option value="date_desc">Newest First</option>
+                  <option value="date_asc">Oldest First</option>
+                  <option value="size_desc">Largest First</option>
+                  <option value="size_asc">Smallest First</option>
+                </select>
+              </div>
+              <button class="btn btn-primary" onclick="searchBlossomBlobs()">Filter</button>
+              <button class="btn" onclick="resetBlossomBlobFilters()">Reset</button>
+            </div>
+
+            <!-- Batch actions toolbar -->
+            <div id="blossom-batch-bar" style="display: flex; align-items: center; gap: 0.5rem;">
+              <button id="blossom-btn-batch-delete" class="btn btn-danger btn-sm" disabled onclick="deleteSelectedBlossomBlobs()">
+                🗑️ Delete Selected (<span id="blossom-selected-count">0</span>)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Media Files Catalog (<span id="blossom-files-total-count">0</span> matching)</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span id="blossom-files-page-info" style="font-size: 0.8rem; color: var(--text-muted);">Page 1 of 1</span>
+              <button class="btn btn-sm" id="blossom-files-prev-btn" onclick="changeBlossomFilesPage(-1)" disabled>◀ Prev</button>
+              <button class="btn btn-sm" id="blossom-files-next-btn" onclick="changeBlossomFilesPage(1)" disabled>Next ▶</button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 32px;"><input type="checkbox" id="blossom-select-all" onchange="toggleSelectAllBlossomBlobs(this.checked)" /></th>
+                  <th style="width: 50px;">Preview</th>
+                  <th>SHA-256 Hash</th>
+                  <th>Content Type</th>
+                  <th>Size</th>
+                  <th>Owner Pubkey</th>
+                  <th>Uploaded</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="blossom-blobs-table-body">
+                <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">Loading media files...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 2: USERS & QUOTAS -->
+      <div id="blossom-sub-users" class="hidden">
+        <div class="card" style="margin-bottom: 1rem;">
+          <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+            <div style="flex: 1; max-width: 400px;">
+              <label style="font-size: 0.75rem; color: var(--text-muted);">Search by Public Key</label>
+              <input id="blossom-user-search-query" class="input-field" style="margin-bottom: 0;" placeholder="Search hex public key..." onkeydown="if(event.key==='Enter') fetchBlossomUsers()" />
+            </div>
+            <button class="btn btn-primary" onclick="fetchBlossomUsers()">Search</button>
+            <button class="btn" onclick="document.getElementById('blossom-user-search-query').value = ''; fetchBlossomUsers();">Clear</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>User Storage Leaderboard & Upload Permissions (<span id="blossom-users-total-count">0</span> uploaders)</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span id="blossom-users-page-info" style="font-size: 0.8rem; color: var(--text-muted);">Page 1 of 1</span>
+              <button class="btn btn-sm" id="blossom-users-prev-btn" onclick="changeBlossomUsersPage(-1)" disabled>◀ Prev</button>
+              <button class="btn btn-sm" id="blossom-users-next-btn" onclick="changeBlossomUsersPage(1)" disabled>Next ▶</button>
+            </div>
+          </div>
+
+          <div style="overflow-x: auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Public Key</th>
+                  <th>Files</th>
+                  <th>Storage Used</th>
+                  <th>Effective Quota</th>
+                  <th>Upload Permissions</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="blossom-users-table-body">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading user storage data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SUBTAB 3: STORAGE HEALTH & RECONCILE -->
+      <div id="blossom-sub-health" class="hidden">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Storage Integrity & Reconciliation</div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.5;">
+              Scans your physical storage disk directory and compares every stored file against the PostgreSQL database records.
+              Identifies <strong>orphaned files</strong> (files on disk with no DB record taking up space) and <strong>missing files</strong> (database records where the disk file is absent).
+            </p>
+            <div style="display: flex; gap: 0.75rem;">
+              <button id="btn-run-reconcile" class="btn btn-primary" onclick="runBlossomReconcileScan()">🔍 Scan Disk & Reconcile</button>
+              <button id="btn-clean-orphans" class="btn btn-warn" onclick="cleanBlossomOrphanedFiles()" disabled>🧹 Purge Orphaned Files</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Reconciliation Scan Results</div>
+            <div id="blossom-reconcile-results" style="font-size: 0.85rem; color: var(--text-muted);">
+              Click "Scan Disk & Reconcile" to inspect disk integrity.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 6. RELAY CONFIG VIEW (DYNAMIC UI + ADVANCED RAW JSON) -->
+    <section id="view-settings" class="hidden">
+      
+      <!-- SUBTAB SWITCHER & TOP TOOLBAR -->
+      <div class="subtabs">
+        <button id="subtab-btn-visual" class="subtab-btn active" onclick="switchConfigSubtab('visual')">🎨 Dynamic Form Editor</button>
+        <button id="subtab-btn-raw" class="subtab-btn" onclick="switchConfigSubtab('raw')">📝 Advanced Raw JSON</button>
+        <div style="margin-left: auto; display: flex; align-items: center; gap: 0.75rem;">
+          <span id="json-validity-pill" class="badge badge-whitelisted">● Valid JSON</span>
+          <button class="btn btn-sm" onclick="fetchConfig()" title="Discard unsaved edits and reload from disk">↺ Reload</button>
+          <button class="btn btn-primary btn-sm" id="btn-save-cfg" onclick="saveRelayConfig()">💾 Save Configuration</button>
+        </div>
+      </div>
+
+      <!-- VISUAL FORM CONTAINER -->
+      <div id="config-visual-container">
+
+        <!-- QUICK CATEGORY JUMP PILLS -->
+        <div class="config-cat-nav">
+          <button class="config-cat-btn active" onclick="filterConfigCategory('all', this)">All Sections</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('identity', this)">🪪 Identity & NIPs</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('server', this)">🌐 Server & Admin</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('auth', this)">🔐 Auth & Access</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('events', this)">🛡️ Event Limits</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('subs', this)">📡 Subscriptions</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('negentropy', this)">⚡ Negentropy</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('blossom', this)">🌸 Blossom Media</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('cleanup', this)">🧹 Retention & Prune</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('vanish', this)">💨 Vanish Profiles</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('libregram', this)">🚀 Libregram & Push</button>
+          <button class="config-cat-btn" onclick="filterConfigCategory('logging', this)">📜 Logging</button>
+        </div>
+
+        <!-- 1. RELAY IDENTITY (NIP-11) -->
+        <div class="card cfg-card" data-cat="identity">
+          <div class="card-title">
+            <span>🪪 Relay Information & Identity (NIP-11)</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Relay Name
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Public display name of your Nostr relay shown in Libregram & client apps.<div class="tip-def">Key: <code>RelayInformation.Name</code></div></span></span>
+              </div>
+              <input id="cfg-name" class="input-field" placeholder="e.g. Libregram Main Relay" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Relay Version
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Software version string advertised in the NIP-11 information document.<div class="tip-def">Key: <code>RelayInformation.Version</code></div></span></span>
+              </div>
+              <input id="cfg-version" class="input-field" placeholder="v1.0.0" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="field-label">
+              Description
+              <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Detailed overview of your relay, its policies, and Libregram community focus.<div class="tip-def">Key: <code>RelayInformation.Description</code></div></span></span>
+            </div>
+            <input id="cfg-description" class="input-field" placeholder="A high-performance Libregram Nostr relay..." oninput="syncVisualToState()" />
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Operator Public Key
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">64-character hex Nostr public key of the relay owner/operator.<div class="tip-def">Key: <code>RelayInformation.PublicKey</code></div></span></span>
+              </div>
+              <input id="cfg-pubkey" class="input-field mono" placeholder="hex public key..." oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Contact Address
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Email address, matrix handle, or Nostr npub for operator inquiries.<div class="tip-def">Key: <code>RelayInformation.Contact</code></div></span></span>
+              </div>
+              <input id="cfg-contact" class="input-field" placeholder="operator@example.com" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div style="margin-top: 0.75rem;">
+            <div class="field-label">
+              Supported NIPs (Click to toggle advertised NIPs)
+              <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Toggle which Nostr Implementation Possibilities your relay supports and advertises to connecting clients in NIP-11.<div class="tip-def">Key: <code>RelayInformation.SupportedNips</code></div></span></span>
+            </div>
+            <div class="nip-grid" id="nip-chips-container" style="margin-top: 0.5rem;">
+              <!-- Populated dynamically -->
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem;">
+              <input id="cfg-custom-nip-input" type="number" class="input-field" placeholder="Custom NIP # (e.g. 50)" style="max-width: 170px; margin: 0;" />
+              <button class="btn btn-sm" onclick="addCustomNip()">+ Add Custom NIP</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. SERVER & ADMIN ACCESS -->
+        <div class="card cfg-card" data-cat="server">
+          <div class="card-title">
+            <span>🌐 Network, IP Binding & Server Ports</span>
+          </div>
+
+          <!-- Router / LAN Notice Box -->
+          <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 0.8rem; line-height: 1.4;">
+            <div style="font-weight: 600; color: var(--primary); margin-bottom: 0.25rem;">
+              📡 Router & Local Network (LAN) Connectivity
+            </div>
+            <div style="color: var(--text-muted);">
+              • To access the relay and panel from other devices on your router (e.g., <code id="cfg-lan-example">http://192.168.88.31:8083</code>), set <strong>Listening Host</strong> to <code style="color: var(--primary);">0.0.0.0</code>.<br>
+              • If set to <code>127.0.0.1</code> or <code>localhost</code>, the relay only accepts connections from this physical machine and rejects local router traffic.
+            </div>
+          </div>
+
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Listening Host / IP Binding
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Network interface IP to bind to. '0.0.0.0' binds all interfaces (enabling LAN/router access such as 192.168.88.31). '127.0.0.1' binds only to the local machine.<div class="tip-def">Key: <code>Server.Host</code></div></span></span>
+              </div>
+              <input id="cfg-server-host" class="input-field mono" value="0.0.0.0" oninput="syncVisualToState()" placeholder="0.0.0.0" />
+              <div style="display: flex; gap: 0.35rem; margin-top: -0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm" onclick="setHostPreset('0.0.0.0')">🌐 LAN / Router (0.0.0.0)</button>
+                <button type="button" class="btn btn-sm" onclick="setHostPreset('127.0.0.1')">🔒 Localhost Only (127.0.0.1)</button>
+              </div>
+            </div>
+
+            <div class="input-group">
+              <div class="field-label">
+                Listening Port
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">TCP port for HTTP, Nostr WebSockets, Blossom Media, and Web Panel.<div class="tip-def">Key: <code>Server.Port</code></div></span></span>
+              </div>
+              <input id="cfg-server-port" type="number" class="input-field mono" value="8083" oninput="syncVisualToState()" placeholder="8083" />
+              <div style="display: flex; gap: 0.35rem; margin-top: -0.4rem; margin-bottom: 0.5rem; flex-wrap: wrap;">
+                <button type="button" class="btn btn-sm" onclick="setPortPreset(8083)">Default (8083)</button>
+                <button type="button" class="btn btn-sm" onclick="setPortPreset(80)">HTTP (80)</button>
+                <button type="button" class="btn btn-sm" onclick="setPortPreset(2053)">3x-ui (2053)</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-form-3" style="margin-top: 0.5rem;">
+            <div class="input-group">
+              <div class="field-label">
+                WebSocket Path
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">HTTP route where Nostr clients connect for WebSockets. Standard default is '/'.<div class="tip-def">Key: <code>Connection.WebSocketsPath</code></div></span></span>
+              </div>
+              <input id="cfg-ws-path" class="input-field mono" value="/" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Allowed Hosts Header
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Host header filter for incoming requests. '*' allows all hostnames.<div class="tip-def">Key: <code>AllowedHosts</code></div></span></span>
+              </div>
+              <input id="cfg-allowed-hosts" class="input-field" value="*" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Admin Web Path Prefix
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Base URL path for accessing the web admin panel. Default: '/admin'.<div class="tip-def">Key: <code>Admin.Path</code></div></span></span>
+              </div>
+              <input id="cfg-admin-path" class="input-field mono" value="/admin" oninput="syncVisualToState()" />
+            </div>
+          </div>
+
+          <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+            <input type="checkbox" id="cfg-admin-enabled" onchange="syncVisualToState()" style="width: 18px; height: 18px;" />
+            <label for="cfg-admin-enabled" class="field-label">
+              Enable Admin Management Panel & REST API
+              <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Enables the web admin panel and internal management API endpoints.<div class="tip-def">Key: <code>Admin.Enabled</code></div></span></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. AUTHENTICATION & ACCESS (NIP-42) -->
+        <div class="card cfg-card" data-cat="auth">
+          <div class="card-title">
+            <span>🔐 Authentication Policy & Protected Kinds (NIP-42)</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Auth Mode
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Always: Must authenticate to read or publish.<br>Publishing: Anyone can read, only authenticated can post.<br>Optional: Accepts auth freely.<br>Disabled: No NIP-42 challenge issued.<div class="tip-def">Key: <code>Auth.Mode</code></div></span></span>
+              </div>
+              <select id="cfg-auth-mode" class="input-field" onchange="syncVisualToState()">
+                <option value="Always">Always (Required for read & publish)</option>
+                <option value="Publishing">Publishing (Required only to post events)</option>
+                <option value="Optional">Optional (Accepts auth if provided)</option>
+                <option value="Disabled">Disabled (Completely public)</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Protected Event Kinds
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Comma-separated list of event kinds that strictly require auth to subscribe/publish (e.g. 4 for Legacy DMs, 1059 for NIP-17 Gift Wraps).<div class="tip-def">Key: <code>Auth.ProtectedKinds</code></div></span></span>
+              </div>
+              <input id="cfg-protected-kinds" class="input-field mono" placeholder="4, 1059" oninput="syncVisualToState()" />
+              <div style="display: flex; gap: 0.35rem; margin-top: 0.25rem;">
+                <button class="btn btn-sm" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;" onclick="quickAddProtectedKind(4)">+ Kind 4 (Legacy DM)</button>
+                <button class="btn btn-sm" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;" onclick="quickAddProtectedKind(1059)">+ Kind 1059 (Gift Wrap)</button>
+                <button class="btn btn-sm" style="font-size: 0.7rem; padding: 0.15rem 0.4rem;" onclick="quickAddProtectedKind(42)">+ Kind 42 (Channel Msg)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. LIMITS & ANTI-SPAM (DDOS) -->
+        <div class="card cfg-card" data-cat="events">
+          <div class="card-title">
+            <span>🛡️ Event Traffic & Anti-Spam (DDoS Defense)</span>
+          </div>
+          <div class="grid-form-3">
+            <div class="input-group">
+              <div class="field-label">
+                Max Payload Size (Bytes)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum WebSocket frame size allowed. Default: 524288 (512 KB). Prevents memory exhaustion attacks.<div class="tip-def">Key: <code>Limits.MaxPayloadSize</code></div></span></span>
+              </div>
+              <input id="cfg-max-payload" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Min Proof-of-Work Difficulty
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">NIP-13 minimum zero-bit leading difficulty required for events. 0 disables PoW requirement. 10-20 stops spam bots.<div class="tip-def">Key: <code>Limits.Events.MinPowDifficulty</code></div></span></span>
+              </div>
+              <input id="cfg-min-pow" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Events Per Minute
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Sliding window rate limit per client IP. Events exceeding this return 'rate-limited'.<div class="tip-def">Key: <code>Limits.Events.MaxEventsPerMinute</code></div></span></span>
+              </div>
+              <input id="cfg-max-events-min" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="grid-form-4">
+            <div class="input-group">
+              <div class="field-label">
+                Max Tags Per Event
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum tags allowed in a single event JSON payload. Protects database indexing.<div class="tip-def">Key: <code>Limits.Events.MaxEventTags</code></div></span></span>
+              </div>
+              <input id="cfg-max-event-tags" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Pending Events Buffer
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">In-memory queue buffer capacity for background event persistence. Default: 1024.<div class="tip-def">Key: <code>Limits.Events.MaxPendingEvents</code></div></span></span>
+              </div>
+              <input id="cfg-max-pending-events" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Created At Past Offset (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Oldest event timestamp allowed in seconds (e.g. 31536000 = 1 year in past).<div class="tip-def">Key: <code>Limits.Events.MaxCreatedAtLowerOffset</code></div></span></span>
+              </div>
+              <input id="cfg-created-at-lower" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Created At Future Drift (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum clock drift allowed into future. Default: 60s.<div class="tip-def">Key: <code>Limits.Events.MaxCreatedAtUpperOffset</code></div></span></span>
+              </div>
+              <input id="cfg-created-at-upper" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 5. SUBSCRIPTION & REQ LIMITS -->
+        <div class="card cfg-card" data-cat="subs">
+          <div class="card-title">
+            <span>📡 Client Subscriptions & REQ Query Limits</span>
+          </div>
+          <div class="grid-form-3">
+            <div class="input-group">
+              <div class="field-label">
+                Max Active Subscriptions
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max active concurrent REQ filters allowed per WebSocket connection. Default: 50.<div class="tip-def">Key: <code>Limits.Subscriptions.MaxSubscriptions</code></div></span></span>
+              </div>
+              <input id="cfg-max-subs" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Filters Per Subscription
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max filter criteria objects allowed in a single REQ message. Default: 20.<div class="tip-def">Key: <code>Limits.Subscriptions.MaxFilters</code></div></span></span>
+              </div>
+              <input id="cfg-max-sub-filters" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Subscriptions / Minute
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Rate limit: max new REQ subscriptions created per minute per connection. Default: 60.<div class="tip-def">Key: <code>Limits.Subscriptions.MaxSubscriptionsPerMinute</code></div></span></span>
+              </div>
+              <input id="cfg-max-subs-min" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Max Initial Query Limit
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Upper cap on the 'limit' parameter in REQ filters. Prevents database query overload. Default: 1000.<div class="tip-def">Key: <code>Limits.Subscriptions.MaxInitialLimit</code></div></span></span>
+              </div>
+              <input id="cfg-max-initial-limit" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Subscription ID Length
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max character length allowed for client subscription IDs. Default: 128.<div class="tip-def">Key: <code>Limits.Subscriptions.MaxSubscriptionIdLength</code></div></span></span>
+              </div>
+              <input id="cfg-max-sub-id-len" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. NEGENTROPY HIGH-SPEED SYNC (NIP-77) -->
+        <div class="card cfg-card" data-cat="negentropy">
+          <div class="card-title">
+            <span>⚡ Negentropy Fast Set Reconciliation (NIP-77)</span>
+          </div>
+          <div class="grid-form-4">
+            <div class="input-group">
+              <div class="field-label">
+                Max Sync Sessions
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max concurrent Negentropy reconciliation sessions allowed per connection. Default: 1.<div class="tip-def">Key: <code>Limits.Negentropy.MaxSubscriptions</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-max-subs" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Sync Filters
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max filter objects allowed for Negentropy sync. Default: 20.<div class="tip-def">Key: <code>Limits.Negentropy.MaxFilters</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-max-filters" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Sync Subs / Minute
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Rate limit on starting new Negentropy sessions. Default: 5.<div class="tip-def">Key: <code>Limits.Negentropy.MaxSubscriptionsPerMinute</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-subs-min" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Initial Event Cap
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max event count scanned during reconciliation. Default: 500000.<div class="tip-def">Key: <code>Limits.Negentropy.MaxInitialLimit</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-initial-limit" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="grid-form-4">
+            <div class="input-group">
+              <div class="field-label">
+                Frame Size Limit (Bytes)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Max byte size for reconciliation frames. Default: 524288.<div class="tip-def">Key: <code>Limits.Negentropy.FrameSizeLimit</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-frame-size" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Session Age (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Session lifetime before auto-close. Default: 300s.<div class="tip-def">Key: <code>Limits.Negentropy.MaxSubscriptionAgeSeconds</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-sub-age" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Stale Timeout (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Inactivity timeout before closing idle sync session. Default: 30s.<div class="tip-def">Key: <code>Limits.Negentropy.StaleSubscriptionLimitSeconds</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-stale-limit" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Stale Check Interval (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Periodic timer interval to sweep stale sync sessions. Default: 60s.<div class="tip-def">Key: <code>Limits.Negentropy.StaleSubscriptionPeriodSeconds</code></div></span></span>
+              </div>
+              <input id="cfg-negentropy-stale-period" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 7. BLOSSOM MEDIA SERVER (BUD-01/02) -->
+        <div class="card cfg-card" data-cat="blossom">
+          <div class="card-title">
+            <span>🌸 Blossom Decentralized Media Server (BUD-01/02)</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+              <input type="checkbox" id="cfg-blossom-enabled" onchange="syncVisualToState()" style="width: 18px; height: 18px;" />
+              <label for="cfg-blossom-enabled" class="field-label">
+                Enable Blossom Media Server
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Enables decentralized file, image, voice note, and media blob storage endpoints.<div class="tip-def">Key: <code>Blossom.Enabled</code></div></span></span>
+              </label>
+            </div>
+            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+              <input type="checkbox" id="cfg-blossom-auth" onchange="syncVisualToState()" style="width: 18px; height: 18px;" />
+              <label for="cfg-blossom-auth" class="field-label">
+                Require Nostr Auth For Uploads
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Requires clients to sign an HTTP Authorization header using their Nostr keypair.<div class="tip-def">Key: <code>Blossom.AuthRequired</code></div></span></span>
+              </label>
+            </div>
+          </div>
+          <div class="grid-form-4" style="margin-top: 0.5rem;">
+            <div class="input-group">
+              <div class="field-label">
+                Max File Size (MB)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum size allowed per individual media upload (e.g. 10 MB).<div class="tip-def">Key: <code>Blossom.MaxUploadSizeBytes</code></div></span></span>
+              </div>
+              <input id="cfg-blossom-max-file" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                User Quota (MB)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Cumulative storage limit allocated per public key. Default: 1024 MB (1 GB).<div class="tip-def">Key: <code>Blossom.MaxStoragePerUserBytes</code></div></span></span>
+              </div>
+              <input id="cfg-blossom-user-quota" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Total Server Disk Limit (GB)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum cumulative server disk quota for all blobs. 0 = unlimited.<div class="tip-def">Key: <code>Blossom.MaxTotalStorageBytes</code></div></span></span>
+              </div>
+              <input id="cfg-blossom-total-storage" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Uploads / Minute
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Upload frequency limit per IP per minute. Default: 30.<div class="tip-def">Key: <code>Blossom.MaxUploadsPerMinute</code></div></span></span>
+              </div>
+              <input id="cfg-blossom-max-uploads-min" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="input-group">
+            <div class="field-label">
+              Storage Path On Disk
+              <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Directory on server disk where uploaded blobs are stored. Default: blossom_data.<div class="tip-def">Key: <code>Blossom.StoragePath</code></div></span></span>
+            </div>
+            <input id="cfg-blossom-path" class="input-field" oninput="syncVisualToState()" />
+          </div>
+          <div class="input-group">
+            <div class="field-label">
+              Allowed MIME Types (Comma or newline separated)
+              <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Whitelisted media MIME types accepted for blob uploads.<div class="tip-def">Key: <code>Blossom.AllowedMimeTypes</code></div></span></span>
+            </div>
+            <textarea id="cfg-blossom-mimes" class="input-field mono" style="height: 70px; resize: vertical;" oninput="syncVisualToState()"></textarea>
+          </div>
+        </div>
+
+        <!-- 8. DATA RETENTION & CLEANUP -->
+        <div class="card cfg-card" data-cat="cleanup">
+          <div class="card-title">
+            <span>🧹 Database Retention & Event Pruning</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Delete Deleted Events After (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Days to keep NIP-09 deletion tombstone records before removing from PostgreSQL database. Default: 7 days.<div class="tip-def">Key: <code>Cleanup.DeleteDeletedEventsAfterDays</code></div></span></span>
+              </div>
+              <input id="cfg-clean-deleted-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Delete Expired Events After (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Days to keep NIP-40 expired events after expiration before purging. Default: 7 days.<div class="tip-def">Key: <code>Cleanup.DeleteExpiredEventsAfterDays</code></div></span></span>
+              </div>
+              <input id="cfg-clean-expired-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 9. VANISH PROFILES (NIP-62) -->
+        <div class="card cfg-card" data-cat="vanish">
+          <div class="card-title">
+            <span>💨 Vanishing Profiles & Account Wipe (NIP-62)</span>
+          </div>
+          <div class="grid-form-4">
+            <div class="input-group">
+              <div class="field-label">
+                Cancel Window (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Grace period before an account wipe request permanently executes. User can cancel during this window. Default: 3.<div class="tip-def">Key: <code>Vanish.CancelWindowDays</code></div></span></span>
+              </div>
+              <input id="cfg-vanish-cancel-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Min Ban Duration (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Minimum days pubkey remains banned after account wipe execution. Default: 1.<div class="tip-def">Key: <code>Vanish.BanAtMinDays</code></div></span></span>
+              </div>
+              <input id="cfg-vanish-min-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Ban Duration (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum days pubkey remains banned after account wipe execution. Default: 30.<div class="tip-def">Key: <code>Vanish.BanAtMaxDays</code></div></span></span>
+              </div>
+              <input id="cfg-vanish-max-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Scan Interval (Sec)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Periodic interval between background scans for pending vanish requests. Default: 60s.<div class="tip-def">Key: <code>Vanish.ExecutionIntervalSeconds</code></div></span></span>
+              </div>
+              <input id="cfg-vanish-interval" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 10. LIBREGRAM & PUSH NOTIFICATIONS -->
+        <div class="card cfg-card" data-cat="libregram">
+          <div class="card-title">
+            <span>🚀 Libregram Protocol Extensions & Push Notifications</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+              <input type="checkbox" id="cfg-notif-enabled" onchange="syncVisualToState()" style="width: 18px; height: 18px;" />
+              <label for="cfg-notif-enabled" class="field-label">
+                Enable Push Notifications Service
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Enables Libregram push notification caching and mobile device dispatch.<div class="tip-def">Key: <code>Notifications.Enabled</code></div></span></span>
+              </label>
+            </div>
+            <div class="input-group" style="display: flex; align-items: center; gap: 0.5rem; margin-top: 1rem;">
+              <input type="checkbox" id="cfg-lg-enabled" onchange="syncVisualToState()" style="width: 18px; height: 18px;" />
+              <label for="cfg-lg-enabled" class="field-label">
+                Enable Libregram Protocol Extensions
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Enables custom LG commands (lg.capabilities, proxy routing, push notifications).<div class="tip-def">Key: <code>Libregram.Enabled</code></div></span></span>
+              </label>
+            </div>
+          </div>
+          <div class="grid-form-3" style="margin-top: 0.5rem;">
+            <div class="input-group">
+              <div class="field-label">
+                Max Events In Push History
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Maximum notification event IDs cached in history per device registration. Default: 50.<div class="tip-def">Key: <code>Notifications.MaxEvents</code></div></span></span>
+              </div>
+              <input id="cfg-notif-max-events" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Max Since Age (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Historical event search window for push alerts. Default: 90 days.<div class="tip-def">Key: <code>Notifications.MaxSinceAgeDays</code></div></span></span>
+              </div>
+              <input id="cfg-notif-max-since-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Push Token Lifetime (Days)
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Device push authorization token validity duration. Default: 10 days.<div class="tip-def">Key: <code>Notifications.TokenLifetimeDays</code></div></span></span>
+              </div>
+              <input id="cfg-notif-token-lifetime-days" type="number" class="input-field" oninput="syncVisualToState()" />
+            </div>
+          </div>
+          <div class="grid-form-3" style="margin-top: 0.5rem;">
+            <div class="input-group">
+              <div class="field-label">
+                Relay Flavor
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Identifies relay implementation type to Libregram clients.<div class="tip-def">Key: <code>Libregram.RelayFlavor</code></div></span></span>
+              </div>
+              <input id="cfg-lg-flavor" class="input-field" value="libregram" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Protocol Version
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Libregram protocol version number. Default: 1.<div class="tip-def">Key: <code>Libregram.ProtocolVersion</code></div></span></span>
+              </div>
+              <input id="cfg-lg-version" type="number" class="input-field" value="1" oninput="syncVisualToState()" />
+            </div>
+            <div class="input-group">
+              <div class="field-label">
+                Enabled Commands
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Comma-separated list of custom RPC commands supported by this relay.<div class="tip-def">Key: <code>Libregram.Commands</code></div></span></span>
+              </div>
+              <input id="cfg-lg-commands" class="input-field mono" value="lg.capabilities, lg.notifications" oninput="syncVisualToState()" />
+            </div>
+          </div>
+        </div>
+
+        <!-- 11. LOGGING (SERILOG) -->
+        <div class="card cfg-card" data-cat="logging">
+          <div class="card-title">
+            <span>📜 Logging & Diagnostics (Serilog)</span>
+          </div>
+          <div class="grid-form-2">
+            <div class="input-group">
+              <div class="field-label">
+                Default Minimum Log Level
+                <span class="tip-wrap"><span class="tip-icon">?</span><span class="tip-box">Console & file log level: Debug (verbose development), Information (standard production), Warning, Error.<div class="tip-def">Key: <code>Serilog.MinimumLevel.Default</code></div></span></span>
+              </div>
+              <select id="cfg-log-level" class="input-field" onchange="syncVisualToState()">
+                <option value="Debug">Debug (Verbose runtime details)</option>
+                <option value="Information">Information (Standard production)</option>
+                <option value="Warning">Warning (Only warnings & errors)</option>
+                <option value="Error">Error (Errors only)</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: center; margin-top: 1rem;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                Logs are written to console and rotated daily in <code>logs/log.txt</code>. You can stream them in the <a href="javascript:void(0)" onclick="switchTab('logs')" style="color: var(--primary);">Live Logs</a> tab.
+              </span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RAW JSON ADVANCED CONTAINER -->
+      <div id="config-raw-container" class="hidden">
+        <div class="card">
+          <div class="card-title">
+            <span>Direct appsettings.json Editor</span>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <button class="btn btn-sm" onclick="formatRawJson()" title="Prettify and indent JSON">✨ Format JSON</button>
+              <button class="btn btn-sm" onclick="compactRawJson()" title="Minify JSON">🗜️ Compact</button>
+              <button class="btn btn-sm" onclick="copyRawJson()" title="Copy JSON to clipboard">📋 Copy</button>
+              <button class="btn btn-sm" onclick="toggleSchemaHints()" id="btn-toggle-hints">🔍 Key Hints</button>
+            </div>
+          </div>
+
+          <!-- SYNTAX ERROR BANNER WITH LINE/SNIPPET -->
+          <div id="json-error-banner" class="json-error-banner hidden"></div>
+
+          <!-- SPLIT VIEW: TEXTAREA + SCHEMA HINTS PANEL -->
+          <div class="raw-editor-layout">
+            <div style="position: relative;">
+              <textarea id="config-json-editor" oninput="handleRawJsonInput()" spellcheck="false" style="width: 100%; height: 600px; background: #070a0f; border: 1px solid var(--card-border); color: #7dd3fc; font-family: var(--font-mono); font-size: 0.85rem; padding: 1rem; border-radius: 8px; tab-size: 2; line-height: 1.45;"></textarea>
+            </div>
+
+            <!-- SCHEMA HINTS DRAWER -->
+            <div id="schema-hints-panel" class="hints-panel">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <span style="font-size: 0.85rem; font-weight: 600; color: #f1f5f9;">Schema & Key Hints</span>
+                <span style="font-size: 0.7rem; color: var(--text-muted);" id="hints-count"></span>
+              </div>
+              <input id="hints-search" class="hints-search" placeholder="Search keys (e.g. Blossom, Auth)..." oninput="filterSchemaHints(this.value)" />
+              <div class="hints-list" id="hints-list-container">
+                <!-- Dynamically rendered hints -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 7. LIVE LOGS VIEW -->
+    <section id="view-logs" class="hidden">
+      <div class="card">
+        <div class="card-title">
+          <span>System & Relay Output Stream</span>
+          <div style="display: flex; gap: 0.5rem;">
+            <button class="btn btn-sm" onclick="fetchLogs()">Refresh</button>
+            <button class="btn btn-sm btn-danger" onclick="document.getElementById('log-terminal').textContent = ''">Clear</button>
+          </div>
+        </div>
+        <div class="terminal" id="log-terminal">Loading log stream...</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- LOGIN MODAL -->
+  <div id="login-modal" class="modal-overlay hidden">
+    <div class="modal-card" style="text-align: center;">
+      <img src="/greg.png" alt="Greg" style="width: 56px; height: 56px; border-radius: 12px; margin-bottom: 0.75rem; object-fit: cover; display: inline-block;" />
+      <h2 style="margin-bottom: 0.5rem; font-size: 1.25rem;">Unitaz Admin Access</h2>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Sign in to manage your Libregram relay.</p>
+      
+      <form onsubmit="handleLogin(event)" style="text-align: left;">
+        <label style="font-size: 0.8rem; color: var(--text-muted);">Admin Username</label>
+        <input id="login-username" class="input-field" value="admin" required />
+
+        <label style="font-size: 0.8rem; color: var(--text-muted);">Admin Password</label>
+        <input id="login-password" type="password" class="input-field" placeholder="••••••••" required />
+
+        <div id="login-error" style="color: var(--danger); font-size: 0.8rem; margin-bottom: 0.75rem;" class="hidden"></div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; margin-top: 0.5rem;">Sign In</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- BLOSSOM MEDIA PREVIEW MODAL -->
+  <div id="blossom-preview-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-card-lg">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700;">🌸 Blossom Media Inspector</h3>
+        <button class="btn btn-sm" onclick="closeBlossomPreviewModal()">✕</button>
+      </div>
+      <div style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+        <button id="preview-tab-auto" class="btn btn-sm btn-primary" onclick="setBlobPreviewMode('auto')">Auto Detect</button>
+        <button id="preview-tab-image" class="btn btn-sm" onclick="setBlobPreviewMode('image')">Image</button>
+        <button id="preview-tab-audio" class="btn btn-sm" onclick="setBlobPreviewMode('audio')">Audio</button>
+        <button id="preview-tab-video" class="btn btn-sm" onclick="setBlobPreviewMode('video')">Video</button>
+        <button id="preview-tab-text" class="btn btn-sm" onclick="setBlobPreviewMode('text')">Text/JSON</button>
+        <button id="preview-tab-hex" class="btn btn-sm" onclick="setBlobPreviewMode('hex')">Hex Dump</button>
+      </div>
+      <div id="blossom-preview-content" style="background: #090e17; border-radius: 8px; border: 1px solid var(--card-border); padding: 1rem; display: flex; align-items: center; justify-content: center; min-height: 240px; max-height: 380px; overflow: auto; margin-bottom: 1rem;">
+        <!-- Dynamic media preview -->
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem; margin-bottom: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: var(--text-muted);">SHA-256:</span>
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <span id="preview-sha" class="mono" style="font-size: 0.75rem; word-break: break-all;"></span>
+            <button class="btn btn-sm" onclick="copyText(document.getElementById('preview-sha').textContent)">Copy</button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Content-Type:</span>
+          <span id="preview-mime" class="mono" style="font-weight: 600;"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">File Size:</span>
+          <span id="preview-size" class="mono"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: var(--text-muted);">Owner Pubkey:</span>
+          <div style="display: flex; align-items: center; gap: 0.35rem;">
+            <span id="preview-owner" class="mono" style="font-size: 0.75rem;"></span>
+            <button class="btn btn-sm" onclick="copyText(document.getElementById('preview-owner').textContent)">Copy</button>
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Uploaded At:</span>
+          <span id="preview-date"></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="color: var(--text-muted);">Direct URL:</span>
+          <a id="preview-url-link" href="#" target="_blank" class="mono" style="color: var(--primary); font-size: 0.75rem; text-decoration: underline; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></a>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: space-between; gap: 0.75rem;">
+        <button id="preview-btn-delete" class="btn btn-danger" onclick="deleteBlobFromPreview()">🗑️ Delete This Blob</button>
+        <button class="btn" onclick="closeBlossomPreviewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOSSOM USER QUOTA MODAL -->
+  <div id="blossom-quota-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 style="margin-bottom: 0.5rem; font-size: 1.15rem;">Set User Storage Quota</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Configure custom storage quota override for this pubkey. Setting <code>0 MB</code> disables uploads for this user.
+      </p>
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">User Public Key</label>
+        <input id="quota-pubkey-input" class="input-field mono" readonly />
+      </div>
+      <div style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">Custom Storage Limit (MB)</label>
+        <input id="quota-mb-input" type="number" min="0" class="input-field" placeholder="e.g. 1024 for 1 GB, 0 to disable" />
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.25rem;">
+          <input type="checkbox" id="quota-reset-default" onchange="toggleQuotaResetDefault(this.checked)" />
+          <label for="quota-reset-default" style="font-size: 0.8rem; color: var(--text-muted); cursor: pointer;">
+            Reset to server default quota (remove override)
+          </label>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button class="btn" onclick="closeBlossomQuotaModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveBlossomUserQuota()">Save Quota</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BLOSSOM USER BAN UPLOADS MODAL -->
+  <div id="blossom-ban-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3 id="blossom-ban-title" style="margin-bottom: 0.5rem; font-size: 1.15rem;">Ban User from Blossom Uploads</h3>
+      <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+        Prevent this pubkey from uploading any media files to Blossom. Existing media files remain accessible.
+      </p>
+      <div style="margin-bottom: 0.75rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">User Public Key</label>
+        <input id="ban-pubkey-input" class="input-field mono" readonly />
+      </div>
+      <div id="ban-reason-group" style="margin-bottom: 1rem;">
+        <label style="font-size: 0.75rem; color: var(--text-muted);">Ban Reason (Optional)</label>
+        <input id="ban-reason-input" class="input-field" placeholder="e.g. Upload abuse, excessive spam" />
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+        <button class="btn" onclick="closeBlossomBanModal()">Cancel</button>
+        <button id="ban-submit-btn" class="btn btn-danger" onclick="submitBlossomBan()">Confirm Ban</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CLIENT SUBSCRIPTIONS MODAL -->
+  <div id="client-subs-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-card-lg" style="max-width: 900px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h3 id="client-subs-title" style="margin: 0; font-size: 1.15rem;">Client Subscriptions</h3>
+        <button class="btn btn-sm" onclick="closeClientSubsModal()">Close</button>
+      </div>
+      <div id="client-subs-content" style="max-height: 500px; overflow-y: auto;">
+        <div style="text-align: center; color: var(--text-muted); padding: 1rem;">Loading subscriptions...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- JAVASCRIPT APPLICATION CODE -->
+  <script>
+    let token = localStorage.getItem('unitaz_admin_token') || '';
+    let telemetryTimer = null;
+    let currentConfig = {};
+    let isRawJsonValid = true;
+
+    const KNOWN_NIPS = [
+      { id: 1, name: "NIP-01", desc: "Basic protocol flow: EVENT, REQ, CLOSE, OK, NOTICE, EOSE" },
+      { id: 2, name: "NIP-02", desc: "Contact list & following (kind 3)" },
+      { id: 4, name: "NIP-04", desc: "Legacy direct encrypted messages (deprecated by NIP-17)" },
+      { id: 7, name: "NIP-07", desc: "window.nostr browser extension signing support" },
+      { id: 9, name: "NIP-09", desc: "Event deletion requests (kind 5)" },
+      { id: 11, name: "NIP-11", desc: "Relay information document served via HTTP GET /" },
+      { id: 13, name: "NIP-13", desc: "Proof of Work anti-spam difficulty nonce verification" },
+      { id: 17, name: "NIP-17", desc: "Private direct messaging (NIP-44 + NIP-59 gift wrap)" },
+      { id: 40, name: "NIP-40", desc: "Expiration timestamp support (automatic pruning)" },
+      { id: 42, name: "NIP-42", desc: "Relay authentication challenge-response via signed events" },
+      { id: 45, name: "NIP-45", desc: "COUNT command for filter totals without streaming" },
+      { id: 56, name: "NIP-56", desc: "Content reporting for spam, illegal content, or harassment" },
+      { id: 62, name: "NIP-62", desc: "Vanishing profile execution & account wipe" },
+      { id: 70, name: "NIP-70", desc: "Protected event publishing (author verification)" },
+      { id: 77, name: "NIP-77", desc: "Negentropy fast set reconciliation sync protocol" },
+      { id: 119, name: "NIP-119", desc: "Libregram push notification device token registry" }
+    ];
+
+    const SCHEMA_HINTS = [
+      { key: "RelayInformation.Name", type: "string", def: "netstr.io", desc: "Public relay title shown in Libregram & client apps." },
+      { key: "RelayInformation.Description", type: "string", def: "A nostr relay", desc: "Detailed purpose and community policies of your relay." },
+      { key: "RelayInformation.PublicKey", type: "string", def: "hex...", desc: "64-char hex Nostr public key of the relay owner." },
+      { key: "RelayInformation.Contact", type: "string", def: "mailto:...", desc: "Contact URI, email, or npub for operator reachability." },
+      { key: "RelayInformation.SupportedNips", type: "number[]", def: "[1, 2, 4, 11, ...]", desc: "Array of NIP numbers officially supported and advertised in NIP-11." },
+      { key: "RelayInformation.Version", type: "string", def: "v1.0.0", desc: "Software version advertised in NIP-11 document." },
+      { key: "Server.Host", type: "string", def: "0.0.0.0", desc: "Network interface IP to bind to. '0.0.0.0' allows LAN/router access; '127.0.0.1' is localhost only." },
+      { key: "Server.Port", type: "number", def: "8083", desc: "TCP port number where Kestrel listens for HTTP, WebSockets, Blossom & Admin." },
+      { key: "Connection.WebSocketsPath", type: "string", def: "/", desc: "HTTP route where WebSocket clients connect." },
+      { key: "AllowedHosts", type: "string", def: "*", desc: "Host header filter or '*' for all incoming domains." },
+      { key: "Admin.Enabled", type: "boolean", def: "true", desc: "Enables or disables the admin web panel and admin API." },
+      { key: "Admin.Port", type: "number", def: "2053", desc: "Port used to access the web panel and relay service." },
+      { key: "Admin.Path", type: "string", def: "/admin", desc: "Base URL path prefix for the admin panel." },
+      { key: "Auth.Mode", type: "string", def: "Always", desc: "NIP-42 Auth policy: 'Always', 'Publishing', 'Optional', 'Disabled'." },
+      { key: "Auth.ProtectedKinds", type: "number[]", def: "[4, 1059]", desc: "Event kinds strictly requiring auth to read or post." },
+      { key: "Limits.MaxPayloadSize", type: "number", def: "524288", desc: "Maximum WebSocket frame size in bytes (512 KB)." },
+      { key: "Limits.Events.MinPowDifficulty", type: "number", def: "0", desc: "NIP-13 minimum leading zero bits required to accept events." },
+      { key: "Limits.Events.MaxEventsPerMinute", type: "number", def: "300", desc: "Rate limit: max events allowed per minute per client IP." },
+      { key: "Limits.Events.MaxEventTags", type: "number", def: "1000", desc: "Max tags allowed in a single event JSON array." },
+      { key: "Limits.Events.MaxPendingEvents", type: "number", def: "1024", desc: "In-memory event ingestion queue buffer capacity." },
+      { key: "Limits.Events.MaxCreatedAtLowerOffset", type: "number", def: "31536000", desc: "Oldest timestamp accepted (seconds in past, 31536000 = 1 yr)." },
+      { key: "Limits.Events.MaxCreatedAtUpperOffset", type: "number", def: "60", desc: "Max future clock drift allowed (seconds into future)." },
+      { key: "Limits.Subscriptions.MaxSubscriptions", type: "number", def: "50", desc: "Max active concurrent subscriptions per connection." },
+      { key: "Limits.Subscriptions.MaxFilters", type: "number", def: "20", desc: "Max filter objects inside a single REQ message." },
+      { key: "Limits.Subscriptions.MaxSubscriptionsPerMinute", type: "number", def: "60", desc: "Rate limit: max new REQ subscriptions created per minute." },
+      { key: "Limits.Subscriptions.MaxInitialLimit", type: "number", def: "1000", desc: "Upper cap on the 'limit' parameter in REQ filters." },
+      { key: "Limits.Subscriptions.MaxSubscriptionIdLength", type: "number", def: "128", desc: "Max character length allowed for subscription IDs." },
+      { key: "Limits.Negentropy.MaxSubscriptions", type: "number", def: "1", desc: "Max concurrent active NIP-77 Negentropy sync sessions." },
+      { key: "Limits.Negentropy.MaxFilters", type: "number", def: "20", desc: "Max filter objects allowed for Negentropy sync." },
+      { key: "Limits.Negentropy.MaxSubscriptionsPerMinute", type: "number", def: "5", desc: "Rate limit on starting new Negentropy reconciliations." },
+      { key: "Limits.Negentropy.MaxInitialLimit", type: "number", def: "500000", desc: "Upper event count limit processed during reconciliation." },
+      { key: "Limits.Negentropy.FrameSizeLimit", type: "number", def: "524288", desc: "Max byte size for reconciliation frames." },
+      { key: "Limits.Negentropy.MaxSubscriptionAgeSeconds", type: "number", def: "300", desc: "Reconciliation session maximum lifetime before closing." },
+      { key: "Limits.Negentropy.StaleSubscriptionLimitSeconds", type: "number", def: "30", desc: "Idle timeout for inactive Negentropy sessions." },
+      { key: "Limits.Negentropy.StaleSubscriptionPeriodSeconds", type: "number", def: "60", desc: "Periodic check interval to clean up stale sessions." },
+      { key: "Blossom.Enabled", type: "boolean", def: "true", desc: "Enables BUD-01/02 decentralized blob/media storage." },
+      { key: "Blossom.AuthRequired", type: "boolean", def: "true", desc: "Requires signed Nostr authorization header for uploads." },
+      { key: "Blossom.MaxUploadSizeBytes", type: "number", def: "10485760", desc: "Maximum upload size per single file (10485760 = 10MB)." },
+      { key: "Blossom.MaxStoragePerUserBytes", type: "number", def: "1073741824", desc: "Storage quota allocated per user pubkey (1073741824 = 1GB)." },
+      { key: "Blossom.MaxTotalStorageBytes", type: "number", def: "0", desc: "Total server disk quota for Blossom (0 = unlimited)." },
+      { key: "Blossom.MaxUploadsPerMinute", type: "number", def: "30", desc: "Upload rate limit per IP per minute." },
+      { key: "Blossom.StoragePath", type: "string", def: "blossom_data", desc: "Local folder path for storing uploaded blobs." },
+      { key: "Blossom.AllowedMimeTypes", type: "string[]", def: "['image/png', ...]", desc: "Whitelisted MIME content types accepted for upload." },
+      { key: "Cleanup.DeleteDeletedEventsAfterDays", type: "number", def: "7", desc: "Days to keep NIP-09 deletion tombstone records before purge." },
+      { key: "Cleanup.DeleteExpiredEventsAfterDays", type: "number", def: "7", desc: "Days to keep NIP-40 expired events before purging." },
+      { key: "Vanish.CancelWindowDays", type: "number", def: "3", desc: "Grace cancellation window (days) before account wipe executes." },
+      { key: "Vanish.BanAtMinDays", type: "number", def: "1", desc: "Minimum ban duration (days) applied after account wipe." },
+      { key: "Vanish.BanAtMaxDays", type: "number", def: "30", desc: "Maximum ban duration (days) applied after account wipe." },
+      { key: "Vanish.ExecutionIntervalSeconds", type: "number", def: "60", desc: "Interval (seconds) between background vanish scans." },
+      { key: "Notifications.Enabled", type: "boolean", def: "true", desc: "Enables Libregram push notification caching and delivery." },
+      { key: "Notifications.MaxEvents", type: "number", def: "50", desc: "Max events cached per device push registration." },
+      { key: "Notifications.MaxSinceAgeDays", type: "number", def: "90", desc: "Historical event window (days) searched for push alerts." },
+      { key: "Notifications.TokenLifetimeDays", type: "number", def: "10", desc: "Push notification authorization token expiration in days." },
+      { key: "Libregram.Enabled", type: "boolean", def: "true", desc: "Enables Libregram protocol extensions and custom commands." },
+      { key: "Libregram.RelayFlavor", type: "string", def: "libregram", desc: "Flavor string advertised in lg.capabilities." },
+      { key: "Libregram.ProtocolVersion", type: "number", def: "1", desc: "Version number for Libregram protocol extensions." },
+      { key: "Libregram.Commands", type: "string[]", def: "['lg.capabilities', 'lg.notifications']", desc: "Custom RPC commands supported by this relay." },
+      { key: "Serilog.MinimumLevel.Default", type: "string", def: "Debug", desc: "Console & file log level: Debug, Information, Warning, Error." }
+    ];
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3500);
+    }
+
+    function checkAuth() {
+      if (!token) {
+        document.getElementById('login-modal').classList.remove('hidden');
+      } else {
+        document.getElementById('login-modal').classList.add('hidden');
+        startTelemetry();
+        fetchClients();
+        fetchPubkeyRules();
+        fetchReports();
+        fetchAppeals();
+        fetchConfig();
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value;
+      const p = document.getElementById('login-password').value;
+      const err = document.getElementById('login-error');
+      err.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/admin/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: u, password: p })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          token = data.token;
+          localStorage.setItem('unitaz_admin_token', token);
+          document.getElementById('header-user').textContent = data.username;
+          checkAuth();
+        } else {
+          const data = await res.json();
+          err.textContent = data.error || 'Invalid credentials';
+          err.classList.remove('hidden');
+        }
+      } catch (ex) {
+        err.textContent = 'Connection error. Check relay status.';
+        err.classList.remove('hidden');
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('unitaz_admin_token');
+      token = '';
+      if (telemetryTimer) clearInterval(telemetryTimer);
+      checkAuth();
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('main > section').forEach(s => s.classList.add('hidden'));
+
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${name}'`));
+      if (targetBtn) targetBtn.classList.add('active');
+
+      const targetView = document.getElementById('view-' + name);
+      if (targetView) targetView.classList.remove('hidden');
+
+      if (name === 'logs') fetchLogs();
+      if (name === 'clients') fetchClients();
+      if (name === 'pubkeys') fetchPubkeyRules();
+      if (name === 'moderation') fetchReports();
+      if (name === 'appeals') fetchAppeals();
+      if (name === 'blossom') fetchBlossomOverview();
+      if (name === 'settings') fetchConfig();
+    }
+
+    // ==========================================
+    // BLOSSOM MEDIA MANAGEMENT STATE & LOGIC
+    // ==========================================
+    let blossomStats = null;
+    let blossomActiveSubtab = 'files';
+
+    // Blobs list state
+    let blossomBlobs = [];
+    let blossomBlobsPage = 1;
+    let blossomBlobsPageSize = 25;
+    let blossomBlobsTotal = 0;
+    let blossomSelectedHashes = new Set();
+    let currentPreviewBlob = null;
+
+    // Users list state
+    let blossomUsers = [];
+    let blossomUsersPage = 1;
+    let blossomUsersPageSize = 25;
+    let blossomUsersTotal = 0;
+    let currentQuotaUser = null;
+    let currentBanUser = null;
+
+    // Utilities
+    function formatBytes(bytes) {
+      if (bytes == null || isNaN(bytes) || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return (bytes / Math.pow(k, i)).toFixed(i === 0 ? 0 : 1) + ' ' + sizes[i];
+    }
+
+    function copyText(text) {
+      if (!text) return;
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Copied to clipboard');
+      }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Copied to clipboard');
+      });
+    }
+
+    // Switch Blossom Subtabs
+    function switchBlossomSubtab(name) {
+      blossomActiveSubtab = name;
+      ['files', 'users', 'health'].forEach(t => {
+        const btn = document.getElementById('blossom-subtab-btn-' + t);
+        const sub = document.getElementById('blossom-sub-' + t);
+        if (btn) btn.classList.toggle('active', t === name);
+        if (sub) sub.classList.toggle('hidden', t !== name);
+      });
+
+      if (name === 'files') fetchBlossomBlobs();
+      if (name === 'users') fetchBlossomUsers();
+    }
+
+    // Overview & Stats
+    async function fetchBlossomOverview() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/blossom/stats', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        blossomStats = await res.json();
+
+        // Operational Status & Killswitch
+        const statusBadge = document.getElementById('blossom-status-badge');
+        const statusDesc = document.getElementById('blossom-status-desc');
+        const killswitchBtn = document.getElementById('blossom-killswitch-btn');
+        const modeSelect = document.getElementById('blossom-mode-select');
+
+        if (modeSelect) modeSelect.value = blossomStats.accessMode;
+
+        if (!blossomStats.uploadsEnabled || blossomStats.accessMode === 'ReadOnly') {
+          statusBadge.className = 'badge badge-banned';
+          statusBadge.textContent = '● Uploads Paused';
+          statusDesc.textContent = 'Emergency freeze active. Uploads paused, existing media readable.';
+          killswitchBtn.className = 'btn btn-primary btn-sm';
+          killswitchBtn.textContent = '▶️ Resume Blossom Uploads';
+        } else if (blossomStats.accessMode === 'WhitelistedOnly') {
+          statusBadge.className = 'badge badge-whitelisted';
+          statusBadge.textContent = '● Whitelist Only';
+          statusDesc.textContent = 'Uploads restricted to whitelisted pubkeys only.';
+          killswitchBtn.className = 'btn btn-danger btn-sm';
+          killswitchBtn.textContent = '🛑 Emergency Killswitch: Pause Uploads';
+        } else {
+          statusBadge.className = 'badge badge-whitelisted';
+          statusBadge.textContent = '● Uploads Active';
+          statusDesc.textContent = 'Media uploads permitted. Existing files served via HTTP.';
+          killswitchBtn.className = 'btn btn-danger btn-sm';
+          killswitchBtn.textContent = '🛑 Emergency Killswitch: Pause Uploads';
+        }
+
+        // Storage gauge
+        const usedStr = formatBytes(blossomStats.totalBytesUsed);
+        document.getElementById('blossom-storage-used').textContent = usedStr;
+        const maxStr = blossomStats.maxTotalStorageBytes > 0 ? formatBytes(blossomStats.maxTotalStorageBytes) : 'Unlimited';
+        const userDefaultStr = formatBytes(blossomStats.defaultUserQuotaBytes);
+        document.getElementById('blossom-storage-cap').textContent = `Server Cap: ${maxStr} · Default Limit: ${userDefaultStr}`;
+
+        const bar = document.getElementById('blossom-storage-bar');
+        if (blossomStats.maxTotalStorageBytes > 0) {
+          const pct = Math.min(100, Math.max(0, (blossomStats.totalBytesUsed / blossomStats.maxTotalStorageBytes) * 100));
+          bar.style.width = pct.toFixed(1) + '%';
+          bar.style.background = pct > 90 ? 'var(--danger)' : pct > 75 ? 'var(--warning)' : 'var(--primary)';
+        } else {
+          bar.style.width = '100%';
+          bar.style.background = 'var(--primary)';
+        }
+
+        // Catalog & Users
+        document.getElementById('blossom-total-files').textContent = Number(blossomStats.totalBlobs).toLocaleString() + ' Files';
+        document.getElementById('blossom-total-users').textContent = Number(blossomStats.distinctUsersCount).toLocaleString() + ' Unique Uploaders';
+        const tabBadge = document.getElementById('tab-blossom-count');
+        if (tabBadge) tabBadge.textContent = blossomStats.totalBlobs;
+
+        // Categories
+        const cats = blossomStats.categories || {};
+        document.getElementById('blossom-cat-images').textContent = `${cats.imageCount || 0} (${formatBytes(cats.imageBytes || 0)})`;
+        document.getElementById('blossom-cat-audio').textContent = `${cats.audioCount || 0} (${formatBytes(cats.audioBytes || 0)})`;
+        document.getElementById('blossom-cat-video').textContent = `${cats.videoCount || 0} (${formatBytes(cats.videoBytes || 0)})`;
+        document.getElementById('blossom-cat-docs').textContent = `${cats.documentCount || 0} (${formatBytes(cats.documentBytes || 0)})`;
+        document.getElementById('blossom-cat-other').textContent = `${cats.otherCount || 0} (${formatBytes(cats.otherBytes || 0)})`;
+
+        // Also refresh active subtab
+        if (blossomActiveSubtab === 'files') fetchBlossomBlobs();
+        else if (blossomActiveSubtab === 'users') fetchBlossomUsers();
+      } catch (e) {
+        console.error('Failed to fetch Blossom overview', e);
+      }
+    }
+
+    // Killswitch & Access Mode
+    async function toggleBlossomKillswitch() {
+      if (!blossomStats) return;
+      const targetEnabled = !blossomStats.uploadsEnabled || blossomStats.accessMode === 'ReadOnly';
+      const targetMode = targetEnabled ? 'Public' : 'ReadOnly';
+
+      try {
+        const res = await fetch('/api/admin/blossom/killswitch', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadsEnabled: targetEnabled, accessMode: targetMode })
+        });
+        if (res.ok) {
+          showToast(targetEnabled ? 'Blossom uploads resumed' : 'Emergency Killswitch activated: Uploads paused');
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to toggle Blossom killswitch');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function changeBlossomAccessMode(mode) {
+      const uploadsEnabled = mode !== 'ReadOnly';
+      try {
+        const res = await fetch('/api/admin/blossom/killswitch', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ uploadsEnabled, accessMode: mode })
+        });
+        if (res.ok) {
+          showToast('Blossom access mode updated to ' + mode);
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to update Blossom access mode');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    // Blobs Explorer
+    async function fetchBlossomBlobs() {
+      if (!token) return;
+      const query = document.getElementById('blossom-search-query').value.trim();
+      const cat = document.getElementById('blossom-filter-cat').value;
+      const minSize = document.getElementById('blossom-filter-size').value;
+      const sortVal = document.getElementById('blossom-filter-sort').value;
+
+      let sortBy = 'date';
+      let sortDesc = true;
+      if (sortVal === 'date_asc') { sortBy = 'date'; sortDesc = false; }
+      else if (sortVal === 'size_desc') { sortBy = 'size'; sortDesc = true; }
+      else if (sortVal === 'size_asc') { sortBy = 'size'; sortDesc = false; }
+
+      const params = new URLSearchParams({
+        page: blossomBlobsPage,
+        pageSize: blossomBlobsPageSize,
+        sortBy,
+        sortDesc
+      });
+      if (query) params.append('search', query);
+      if (cat) params.append('category', cat);
+      if (minSize) params.append('minBytes', minSize);
+
+      try {
+        const res = await fetch('/api/admin/blossom/blobs?' + params.toString(), {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        blossomBlobs = data.blobs || [];
+        blossomBlobsTotal = data.total || 0;
+
+        renderBlossomBlobs();
+      } catch (e) {
+        console.error('Failed to fetch blobs', e);
+      }
+    }
+
+    function renderBlossomBlobs() {
+      const tbody = document.getElementById('blossom-blobs-table-body');
+      document.getElementById('blossom-files-total-count').textContent = blossomBlobsTotal;
+
+      const totalPages = Math.max(1, Math.ceil(blossomBlobsTotal / blossomBlobsPageSize));
+      document.getElementById('blossom-files-page-info').textContent = `Page ${blossomBlobsPage} of ${totalPages}`;
+      document.getElementById('blossom-files-prev-btn').disabled = blossomBlobsPage <= 1;
+      document.getElementById('blossom-files-next-btn').disabled = blossomBlobsPage >= totalPages;
+
+      if (blossomBlobs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No media files found matching current filters.</td></tr>';
+        updateBatchBar();
+        return;
+      }
+
+      tbody.innerHTML = blossomBlobs.map(b => {
+        const isChecked = blossomSelectedHashes.has(b.sha256);
+        let previewHtml = '';
+        if (b.category === 'image') {
+          previewHtml = `<div class="blossom-thumb-box"><img src="${b.url}" class="blossom-thumb-img" loading="lazy" onerror="this.parentElement.innerHTML='🖼️'" /></div>`;
+        } else if (b.category === 'audio') {
+          previewHtml = `<div class="blossom-thumb-box" title="Audio">🎵</div>`;
+        } else if (b.category === 'video') {
+          previewHtml = `<div class="blossom-thumb-box" title="Video">🎬</div>`;
+        } else if (b.category === 'document') {
+          previewHtml = `<div class="blossom-thumb-box" title="Document">📄</div>`;
+        } else {
+          previewHtml = `<div class="blossom-thumb-box" title="File">📦</div>`;
+        }
+
+        const catBadgeClass = `badge-cat-${b.category || 'other'}`;
+        const dateStr = new Date(b.uploadedAt).toLocaleString();
+
+        return `
+          <tr>
+            <td><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="onBlobSelectChange('${b.sha256}', this.checked)" /></td>
+            <td>${previewHtml}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <a href="${b.url}" target="_blank" class="mono" style="color: var(--primary); text-decoration: underline;" title="${b.sha256}">${b.sha256.substring(0, 12)}...</a>
+                <button class="btn btn-sm" onclick="copyText('${b.sha256}')" title="Copy full SHA-256">📋</button>
+              </div>
+            </td>
+            <td>
+              <span class="badge ${catBadgeClass}">${b.contentType}</span>
+            </td>
+            <td class="mono">${formatBytes(b.size)}</td>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <span class="mono" title="${b.ownerPubkey}">${b.ownerPubkey.substring(0, 10)}...</span>
+                <button class="btn btn-sm" onclick="copyText('${b.ownerPubkey}')" title="Copy Pubkey">📋</button>
+                <button class="btn btn-sm" onclick="filterFilesByUser('${b.ownerPubkey}')" title="Filter files by this user">🔍</button>
+              </div>
+            </td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${dateStr}</td>
+            <td>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-sm" onclick="openBlossomPreview('${b.sha256}')">Inspect</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteSingleBlossomBlob('${b.sha256}')">Delete</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      // Update select all checkbox state
+      const allOnPageSelected = blossomBlobs.length > 0 && blossomBlobs.every(b => blossomSelectedHashes.has(b.sha256));
+      const selectAllEl = document.getElementById('blossom-select-all');
+      if (selectAllEl) selectAllEl.checked = allOnPageSelected;
+
+      updateBatchBar();
+    }
+
+    function searchBlossomBlobs() {
+      blossomBlobsPage = 1;
+      fetchBlossomBlobs();
+    }
+
+    function resetBlossomBlobFilters() {
+      document.getElementById('blossom-search-query').value = '';
+      document.getElementById('blossom-filter-cat').value = '';
+      document.getElementById('blossom-filter-size').value = '';
+      document.getElementById('blossom-filter-sort').value = 'date_desc';
+      blossomBlobsPage = 1;
+      fetchBlossomBlobs();
+    }
+
+    function changeBlossomFilesPage(delta) {
+      const totalPages = Math.max(1, Math.ceil(blossomBlobsTotal / blossomBlobsPageSize));
+      const target = blossomBlobsPage + delta;
+      if (target >= 1 && target <= totalPages) {
+        blossomBlobsPage = target;
+        fetchBlossomBlobs();
+      }
+    }
+
+    function onBlobSelectChange(sha, checked) {
+      if (checked) blossomSelectedHashes.add(sha);
+      else blossomSelectedHashes.delete(sha);
+      updateBatchBar();
+    }
+
+    function toggleSelectAllBlossomBlobs(checked) {
+      blossomBlobs.forEach(b => {
+        if (checked) blossomSelectedHashes.add(b.sha256);
+        else blossomSelectedHashes.delete(b.sha256);
+      });
+      renderBlossomBlobs();
+    }
+
+    function updateBatchBar() {
+      const count = blossomSelectedHashes.size;
+      const countSpan = document.getElementById('blossom-selected-count');
+      const batchBtn = document.getElementById('blossom-btn-batch-delete');
+      if (countSpan) countSpan.textContent = count;
+      if (batchBtn) batchBtn.disabled = count === 0;
+    }
+
+    async function deleteSelectedBlossomBlobs() {
+      const count = blossomSelectedHashes.size;
+      if (count === 0) return;
+      if (!confirm(`Are you sure you want to permanently delete ${count} selected media files?`)) return;
+
+      try {
+        const res = await fetch('/api/admin/blossom/blobs/batch-delete', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hashes: Array.from(blossomSelectedHashes) })
+        });
+        if (res.ok) {
+          const d = await res.json();
+          showToast(`Deleted ${d.deletedCount || count} media files`);
+          blossomSelectedHashes.clear();
+          fetchBlossomBlobs();
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to batch delete media files');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function deleteSingleBlossomBlob(sha) {
+      if (!confirm(`Permanently delete blob ${sha.substring(0, 16)}...?`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/blossom/blobs/${sha}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          showToast('Media file deleted');
+          blossomSelectedHashes.delete(sha);
+          fetchBlossomBlobs();
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to delete media file');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    // Media Preview Modal
+    let currentPreviewMode = 'auto';
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function setBlobPreviewMode(mode) {
+      currentPreviewMode = mode;
+      ['auto', 'image', 'audio', 'video', 'text', 'hex'].forEach(m => {
+        const btn = document.getElementById(`preview-tab-${m}`);
+        if (btn) {
+          if (m === mode) {
+            btn.classList.add('btn-primary');
+          } else {
+            btn.classList.remove('btn-primary');
+          }
+        }
+      });
+      if (currentPreviewBlob) {
+        renderBlobPreview(currentPreviewBlob, mode);
+      }
+    }
+
+    async function renderBlobPreview(blob, mode = 'auto') {
+      const previewBox = document.getElementById('blossom-preview-content');
+      const media = previewBox.querySelector('audio, video');
+      if (media) media.pause();
+
+      previewBox.innerHTML = '<div style="color: var(--text-muted); font-size: 0.85rem;">Decoding media...</div>';
+
+      if (mode === 'image') {
+        previewBox.innerHTML = `<img src="${blob.url}" style="max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 6px;" alt="Image Preview" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align:center;color:var(--danger);\\'>❌ Image decoding failed</div>'" />`;
+        return;
+      }
+      if (mode === 'audio') {
+        previewBox.innerHTML = `<div style="text-align: center; width: 100%;"><div style="font-size: 3rem; margin-bottom: 1rem;">🎵</div><audio controls autoplay src="${blob.url}" style="width: 100%; max-width: 450px;"></audio></div>`;
+        return;
+      }
+      if (mode === 'video') {
+        previewBox.innerHTML = `<video controls autoplay src="${blob.url}" style="max-width: 100%; max-height: 350px; border-radius: 6px;"></video>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(blob.url);
+        if (!res.ok) {
+          previewBox.innerHTML = `<div style="color: var(--danger);">Failed to fetch blob: HTTP ${res.status}</div>`;
+          return;
+        }
+
+        const buf = await res.arrayBuffer();
+        const u8 = new Uint8Array(buf);
+
+        if (mode === 'hex') {
+          previewBox.innerHTML = renderHexDump(u8);
+          return;
+        }
+
+        if (mode === 'text') {
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+          const text = decoder.decode(u8.subarray(0, 65536));
+          previewBox.innerHTML = `<pre style="max-height: 340px; overflow: auto; font-size: 0.75rem; text-align: left; width: 100%; white-space: pre-wrap; word-break: break-all; background: #06090e; padding: 0.75rem; border-radius: 4px; color: #a5d6ff; font-family: monospace;">${escapeHtml(text)}</pre>`;
+          return;
+        }
+
+        // AUTO-DETECT
+        const isPng = u8.length >= 8 && u8[0] === 0x89 && u8[1] === 0x50 && u8[2] === 0x4E && u8[3] === 0x47;
+        const isJpg = u8.length >= 3 && u8[0] === 0xFF && u8[1] === 0xD8 && u8[2] === 0xFF;
+        const isGif = u8.length >= 4 && u8[0] === 0x47 && u8[1] === 0x49 && u8[2] === 0x46;
+        const isWebp = u8.length >= 12 && u8[0] === 0x52 && u8[1] === 0x49 && u8[2] === 0x46 && u8[3] === 0x46 && u8[8] === 0x57 && u8[9] === 0x45 && u8[10] === 0x42 && u8[11] === 0x50;
+        const isMp4 = u8.length >= 8 && u8[4] === 0x66 && u8[5] === 0x74 && u8[6] === 0x79 && u8[7] === 0x70;
+        const isWebm = u8.length >= 4 && u8[0] === 0x1A && u8[1] === 0x45 && u8[2] === 0xDF && u8[3] === 0xA3;
+        const isMp3 = (u8.length >= 3 && u8[0] === 0x49 && u8[1] === 0x44 && u8[2] === 0x33) || (u8.length >= 2 && u8[0] === 0xFF && (u8[1] & 0xFE) === 0xFA);
+        const isOgg = u8.length >= 4 && u8[0] === 0x4F && u8[1] === 0x67 && u8[2] === 0x67 && u8[3] === 0x53;
+        const isWav = u8.length >= 12 && u8[0] === 0x52 && u8[1] === 0x49 && u8[2] === 0x46 && u8[3] === 0x46 && u8[8] === 0x57 && u8[9] === 0x41 && u8[10] === 0x56 && u8[11] === 0x45;
+        const isPdf = u8.length >= 5 && u8[0] === 0x25 && u8[1] === 0x50 && u8[2] === 0x44 && u8[3] === 0x46;
+
+        if (isPng || isJpg || isGif || isWebp || blob.category === 'image') {
+          const mime = isPng ? 'image/png' : isJpg ? 'image/jpeg' : isGif ? 'image/gif' : isWebp ? 'image/webp' : blob.contentType;
+          const objectUrl = URL.createObjectURL(new Blob([u8], { type: mime }));
+          previewBox.innerHTML = `<img src="${objectUrl}" style="max-width: 100%; max-height: 350px; object-fit: contain; border-radius: 6px;" alt="Preview" onerror="this.onerror=null; renderBlobPreview(currentPreviewBlob, 'hex');" />`;
+          return;
+        }
+
+        if (isMp3 || isOgg || isWav || blob.category === 'audio') {
+          const mime = isMp3 ? 'audio/mpeg' : isOgg ? 'audio/ogg' : isWav ? 'audio/wav' : blob.contentType;
+          const objectUrl = URL.createObjectURL(new Blob([u8], { type: mime }));
+          previewBox.innerHTML = `<div style="text-align: center; width: 100%;"><div style="font-size: 3rem; margin-bottom: 1rem;">🎵</div><audio controls autoplay src="${objectUrl}" style="width: 100%; max-width: 450px;"></audio></div>`;
+          return;
+        }
+
+        if (isMp4 || isWebm || blob.category === 'video') {
+          const mime = isMp4 ? 'video/mp4' : isWebm ? 'video/webm' : blob.contentType;
+          const objectUrl = URL.createObjectURL(new Blob([u8], { type: mime }));
+          previewBox.innerHTML = `<video controls autoplay src="${objectUrl}" style="max-width: 100%; max-height: 350px; border-radius: 6px;"></video>`;
+          return;
+        }
+
+        if (isPdf) {
+          const objectUrl = URL.createObjectURL(new Blob([u8], { type: 'application/pdf' }));
+          previewBox.innerHTML = `<iframe src="${objectUrl}" style="width: 100%; height: 350px; border: none; border-radius: 6px;"></iframe>`;
+          return;
+        }
+
+        let isPrintable = true;
+        const checkLen = Math.min(u8.length, 512);
+        for (let i = 0; i < checkLen; i++) {
+          const byte = u8[i];
+          if (byte < 32 && byte !== 9 && byte !== 10 && byte !== 13) {
+            isPrintable = false;
+            break;
+          }
+        }
+
+        if (isPrintable && checkLen > 0) {
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+          const text = decoder.decode(u8.subarray(0, 65536));
+          previewBox.innerHTML = `<pre style="max-height: 340px; overflow: auto; font-size: 0.75rem; text-align: left; width: 100%; white-space: pre-wrap; word-break: break-all; background: #06090e; padding: 0.75rem; border-radius: 4px; color: #a5d6ff; font-family: monospace;">${escapeHtml(text)}</pre>`;
+          return;
+        }
+
+        previewBox.innerHTML = renderHexDump(u8);
+      } catch (err) {
+        previewBox.innerHTML = `<div style="text-align: center;"><div style="font-size: 3rem; margin-bottom: 0.5rem;">📦</div><div style="color: var(--text-muted); font-size: 0.85rem;">Direct preview unavailable: ${escapeHtml(err.message)}</div></div>`;
+      }
+    }
+
+    function renderHexDump(u8) {
+      const maxBytes = Math.min(u8.length, 512);
+      let lines = [];
+      for (let i = 0; i < maxBytes; i += 16) {
+        const offset = i.toString(16).padStart(8, '0');
+        let hexPart = '';
+        let asciiPart = '';
+        for (let j = 0; j < 16; j++) {
+          if (i + j < maxBytes) {
+            const b = u8[i + j];
+            hexPart += b.toString(16).padStart(2, '0') + ' ';
+            asciiPart += (b >= 32 && b <= 126) ? String.fromCharCode(b) : '.';
+          } else {
+            hexPart += '   ';
+          }
+          if (j === 7) hexPart += ' ';
+        }
+        lines.push(`${offset}  ${hexPart} |${asciiPart}|`);
+      }
+      if (u8.length > maxBytes) {
+        lines.push(`... [${u8.length - maxBytes} more bytes]`);
+      }
+      return `<div style="width: 100%; text-align: left;"><div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.25rem;">Binary Hex Inspection (First ${maxBytes} bytes):</div><pre style="max-height: 300px; overflow: auto; font-size: 0.7rem; line-height: 1.35; background: #04070b; padding: 0.6rem; border-radius: 4px; color: #58a6ff; font-family: monospace; white-space: pre;">${lines.join('\n')}</pre></div>`;
+    }
+
+    function openBlossomPreview(sha) {
+      const blob = blossomBlobs.find(b => b.sha256 === sha);
+      if (!blob) return;
+      currentPreviewBlob = blob;
+
+      document.getElementById('preview-sha').textContent = blob.sha256;
+      document.getElementById('preview-mime').textContent = blob.contentType;
+      document.getElementById('preview-size').textContent = formatBytes(blob.size);
+      document.getElementById('preview-owner').textContent = blob.ownerPubkey;
+      document.getElementById('preview-date').textContent = new Date(blob.uploadedAt).toLocaleString();
+
+      const link = document.getElementById('preview-url-link');
+      link.href = blob.url;
+      link.textContent = blob.url;
+
+      setBlobPreviewMode('auto');
+
+      document.getElementById('blossom-preview-modal').classList.remove('hidden');
+    }
+
+    function closeBlossomPreviewModal() {
+      const modal = document.getElementById('blossom-preview-modal');
+      const previewBox = document.getElementById('blossom-preview-content');
+      const media = previewBox.querySelector('audio, video');
+      if (media) media.pause();
+      previewBox.innerHTML = '';
+      modal.classList.add('hidden');
+      currentPreviewBlob = null;
+    }
+
+    function deleteBlobFromPreview() {
+      if (!currentPreviewBlob) return;
+      const sha = currentPreviewBlob.sha256;
+      closeBlossomPreviewModal();
+      deleteSingleBlossomBlob(sha);
+    }
+
+    // Users & Quotas
+    async function fetchBlossomUsers() {
+      if (!token) return;
+      const search = document.getElementById('blossom-user-search-query').value.trim();
+      const params = new URLSearchParams({
+        page: blossomUsersPage,
+        pageSize: blossomUsersPageSize
+      });
+      if (search) params.append('search', search);
+
+      try {
+        const res = await fetch('/api/admin/blossom/users?' + params.toString(), {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        blossomUsers = data.users || [];
+        blossomUsersTotal = data.total || 0;
+
+        renderBlossomUsers();
+      } catch (e) {
+        console.error('Failed to fetch Blossom users', e);
+      }
+    }
+
+    function renderBlossomUsers() {
+      const tbody = document.getElementById('blossom-users-table-body');
+      document.getElementById('blossom-users-total-count').textContent = blossomUsersTotal;
+
+      const totalPages = Math.max(1, Math.ceil(blossomUsersTotal / blossomUsersPageSize));
+      document.getElementById('blossom-users-page-info').textContent = `Page ${blossomUsersPage} of ${totalPages}`;
+      document.getElementById('blossom-users-prev-btn').disabled = blossomUsersPage <= 1;
+      document.getElementById('blossom-users-next-btn').disabled = blossomUsersPage >= totalPages;
+
+      if (blossomUsers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No user upload records found.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = blossomUsers.map(u => {
+        let quotaPct = 0;
+        let quotaBarColor = 'var(--primary)';
+        let quotaLabel = 'Unlimited';
+
+        if (u.effectiveQuotaBytes > 0) {
+          quotaPct = Math.min(100, (u.totalBytesUsed / u.effectiveQuotaBytes) * 100);
+          if (quotaPct > 90) quotaBarColor = 'var(--danger)';
+          else if (quotaPct > 75) quotaBarColor = 'var(--warning)';
+          quotaLabel = `${formatBytes(u.effectiveQuotaBytes)} ${u.hasCustomQuota ? '(Custom)' : '(Default)'}`;
+        } else if (u.hasCustomQuota && u.effectiveQuotaBytes === 0) {
+          quotaPct = 100;
+          quotaBarColor = 'var(--danger)';
+          quotaLabel = '0 B (Disabled)';
+        }
+
+        let statusBadges = '';
+        if (u.isUploadBanned) {
+          statusBadges += `<span class="badge badge-banned" title="${u.banReason || 'Uploads banned'}">🛑 Uploads Banned</span> `;
+        } else {
+          statusBadges += `<span class="badge badge-whitelisted">✓ Allowed</span> `;
+        }
+        if (u.isWhitelisted) {
+          statusBadges += `<span class="badge badge-allowed">★ VIP Whitelist</span>`;
+        }
+
+        return `
+          <tr>
+            <td>
+              <div style="display: flex; align-items: center; gap: 0.35rem;">
+                <span class="mono" title="${u.publicKey}">${u.publicKey.substring(0, 14)}...</span>
+                <button class="btn btn-sm" onclick="copyText('${u.publicKey}')" title="Copy Pubkey">📋</button>
+              </div>
+            </td>
+            <td class="mono">${u.blobCount}</td>
+            <td>
+              <div style="font-size: 0.85rem; font-weight: 600;" class="mono">${formatBytes(u.totalBytesUsed)}</div>
+              <div class="progress-bar" style="margin-top: 0.25rem; height: 5px;">
+                <div class="progress-fill" style="width: ${quotaPct.toFixed(1)}%; background: ${quotaBarColor};"></div>
+              </div>
+            </td>
+            <td>
+              <span class="mono" style="font-size: 0.8rem;">${quotaLabel}</span>
+            </td>
+            <td>${statusBadges}</td>
+            <td>
+              <div style="display: flex; gap: 0.35rem;">
+                <button class="btn btn-sm" onclick="openBlossomQuotaModal('${u.publicKey}', ${u.effectiveQuotaBytes}, ${u.hasCustomQuota})">Quota</button>
+                <button class="btn btn-sm ${u.isUploadBanned ? 'btn-primary' : 'btn-warn'}" onclick="openBlossomBanModal('${u.publicKey}', ${u.isUploadBanned})">
+                  ${u.isUploadBanned ? 'Unban' : 'Ban'}
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="purgeBlossomUserFiles('${u.publicKey}')" title="Purge all blobs uploaded by this user">Purge</button>
+                <button class="btn btn-sm" onclick="filterFilesByUser('${u.publicKey}')" title="View this user's blobs">Files</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function changeBlossomUsersPage(delta) {
+      const totalPages = Math.max(1, Math.ceil(blossomUsersTotal / blossomUsersPageSize));
+      const target = blossomUsersPage + delta;
+      if (target >= 1 && target <= totalPages) {
+        blossomUsersPage = target;
+        fetchBlossomUsers();
+      }
+    }
+
+    function filterFilesByUser(pubkey) {
+      switchBlossomSubtab('files');
+      document.getElementById('blossom-search-query').value = pubkey;
+      searchBlossomBlobs();
+    }
+
+    // User Quota Modal
+    function openBlossomQuotaModal(pubkey, currentQuotaBytes, hasCustomQuota) {
+      currentQuotaUser = pubkey;
+      document.getElementById('quota-pubkey-input').value = pubkey;
+      const mbInput = document.getElementById('quota-mb-input');
+      const resetCheck = document.getElementById('quota-reset-default');
+
+      if (hasCustomQuota) {
+        resetCheck.checked = false;
+        mbInput.disabled = false;
+        mbInput.value = Math.round(currentQuotaBytes / (1024 * 1024));
+      } else {
+        resetCheck.checked = true;
+        mbInput.disabled = true;
+        mbInput.value = Math.round(currentQuotaBytes / (1024 * 1024));
+      }
+
+      document.getElementById('blossom-quota-modal').classList.remove('hidden');
+    }
+
+    function closeBlossomQuotaModal() {
+      document.getElementById('blossom-quota-modal').classList.add('hidden');
+      currentQuotaUser = null;
+    }
+
+    function toggleQuotaResetDefault(checked) {
+      const mbInput = document.getElementById('quota-mb-input');
+      mbInput.disabled = checked;
+    }
+
+    async function saveBlossomUserQuota() {
+      if (!currentQuotaUser) return;
+      const reset = document.getElementById('quota-reset-default').checked;
+      let quotaBytes = null;
+      if (!reset) {
+        const mb = parseFloat(document.getElementById('quota-mb-input').value);
+        if (isNaN(mb) || mb < 0) {
+          alert('Please specify a valid quota in MB (>= 0)');
+          return;
+        }
+        quotaBytes = Math.round(mb * 1024 * 1024);
+      }
+
+      try {
+        const res = await fetch(`/api/admin/blossom/users/${currentQuotaUser}/quota`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ quotaBytes })
+        });
+        if (res.ok) {
+          showToast('User quota updated successfully');
+          closeBlossomQuotaModal();
+          fetchBlossomUsers();
+        } else {
+          alert('Failed to update quota');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    // User Ban Uploads Modal
+    function openBlossomBanModal(pubkey, isCurrentlyBanned) {
+      currentBanUser = { pubkey, isCurrentlyBanned };
+      document.getElementById('ban-pubkey-input').value = pubkey;
+      const title = document.getElementById('blossom-ban-title');
+      const reasonGroup = document.getElementById('ban-reason-group');
+      const submitBtn = document.getElementById('ban-submit-btn');
+
+      if (isCurrentlyBanned) {
+        title.textContent = 'Unban User from Blossom Uploads';
+        reasonGroup.classList.add('hidden');
+        submitBtn.className = 'btn btn-primary';
+        submitBtn.textContent = 'Unban User';
+      } else {
+        title.textContent = 'Ban User from Blossom Uploads';
+        reasonGroup.classList.remove('hidden');
+        document.getElementById('ban-reason-input').value = '';
+        submitBtn.className = 'btn btn-danger';
+        submitBtn.textContent = 'Confirm Ban';
+      }
+
+      document.getElementById('blossom-ban-modal').classList.remove('hidden');
+    }
+
+    function closeBlossomBanModal() {
+      document.getElementById('blossom-ban-modal').classList.add('hidden');
+      currentBanUser = null;
+    }
+
+    async function submitBlossomBan() {
+      if (!currentBanUser) return;
+      const targetBanned = !currentBanUser.isCurrentlyBanned;
+      const reason = targetBanned ? (document.getElementById('ban-reason-input').value.trim() || null) : null;
+
+      try {
+        const res = await fetch(`/api/admin/blossom/users/${currentBanUser.pubkey}/ban-uploads`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ banned: targetBanned, reason })
+        });
+        if (res.ok) {
+          showToast(targetBanned ? 'User banned from Blossom uploads' : 'User unbanned');
+          closeBlossomBanModal();
+          fetchBlossomUsers();
+        } else {
+          alert('Failed to update user upload ban');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    async function purgeBlossomUserFiles(pubkey) {
+      if (!confirm(`⚠️ DANGER: Permanently delete ALL media files uploaded by user ${pubkey.substring(0, 16)}...? This action cannot be undone.`)) return;
+
+      try {
+        const res = await fetch(`/api/admin/blossom/users/${pubkey}/blobs`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          showToast(`Purged ${d.deletedCount || 0} files for user`);
+          fetchBlossomUsers();
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to purge user files');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      }
+    }
+
+    // Storage Integrity & Reconcile
+    async function runBlossomReconcileScan() {
+      const btn = document.getElementById('btn-run-reconcile');
+      const resultsDiv = document.getElementById('blossom-reconcile-results');
+      const cleanBtn = document.getElementById('btn-clean-orphans');
+
+      btn.disabled = true;
+      btn.textContent = 'Scanning...';
+      resultsDiv.innerHTML = '<span style="color: var(--text-muted);">Inspecting physical storage files vs database records...</span>';
+
+      try {
+        const res = await fetch('/api/admin/blossom/reconcile', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          resultsDiv.innerHTML = '<span style="color: var(--danger);">Failed to run reconciliation scan.</span>';
+          return;
+        }
+
+        const report = await res.json();
+        lastReconcileReport = report;
+
+        let html = '<div style="display: flex; flex-direction: column; gap: 0.6rem;">';
+        if (report.orphanedFilesCount === 0 && report.missingFilesCount === 0) {
+          html += '<div style="color: var(--success); font-weight: 600;">✓ Storage is completely healthy and in sync!</div>';
+          html += '<div>No orphaned files found on disk, and all database records have matching physical files.</div>';
+          cleanBtn.disabled = true;
+        } else {
+          if (report.orphanedFilesCount > 0) {
+            html += `<div style="color: var(--warning); font-weight: 600;">⚠️ ${report.orphanedFilesCount} orphaned files found on disk (${formatBytes(report.orphanedBytesTotal)} wasted)</div>`;
+            html += `<div style="font-size: 0.75rem; color: var(--text-muted);">These files exist on disk but have no database descriptor record.</div>`;
+            cleanBtn.disabled = false;
+          } else {
+            cleanBtn.disabled = true;
+          }
+
+          if (report.missingFilesCount > 0) {
+            html += `<div style="color: var(--danger); font-weight: 600;">❌ ${report.missingFilesCount} missing files referenced in database!</div>`;
+            html += `<div style="font-size: 0.75rem; color: var(--text-muted);">These records exist in PostgreSQL but the physical file on disk is absent.</div>`;
+          }
+        }
+
+        if (report.sampleOrphanedFiles && report.sampleOrphanedFiles.length > 0) {
+          html += '<div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">Sample orphaned files:</div>';
+          html += '<div class="mono" style="font-size: 0.75rem; background: #070a0f; padding: 0.5rem; border-radius: 6px; max-height: 100px; overflow-y: auto;">' +
+            report.sampleOrphanedFiles.map(f => `<div>${f}</div>`).join('') + '</div>';
+        }
+
+        html += '</div>';
+        resultsDiv.innerHTML = html;
+      } catch (e) {
+        resultsDiv.innerHTML = '<span style="color: var(--danger);">Network error: ' + e.message + '</span>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Scan Disk & Reconcile';
+      }
+    }
+
+    async function cleanBlossomOrphanedFiles() {
+      if (!confirm('Are you sure you want to delete all orphaned files from disk? This cannot be undone.')) return;
+      const cleanBtn = document.getElementById('btn-clean-orphans');
+      cleanBtn.disabled = true;
+      cleanBtn.textContent = 'Purging...';
+
+      try {
+        const res = await fetch('/api/admin/blossom/reconcile/clean', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          const d = await res.json();
+          showToast(`Cleaned ${d.cleanedCount || 0} orphaned files from disk`);
+          runBlossomReconcileScan();
+          fetchBlossomOverview();
+        } else {
+          alert('Failed to clean orphaned files');
+        }
+      } catch (e) {
+        alert('Network error: ' + e.message);
+      } finally {
+        cleanBtn.textContent = '🧹 Purge Orphaned Files';
+      }
+    }
+
+    // TELEMETRY POLLING
+    function startTelemetry() {
+      fetchTelemetry();
+      if (telemetryTimer) clearInterval(telemetryTimer);
+      telemetryTimer = setInterval(fetchTelemetry, 3000);
+    }
+
+    async function fetchTelemetry() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/telemetry', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.status === 401) { logout(); return; }
+        if (!res.ok) return;
+
+        const d = await res.json();
+
+        // CPU & RAM
+        document.getElementById('stat-cpu').textContent = d.system.cpuUsagePercent.toFixed(1) + '%';
+        document.getElementById('bar-cpu').style.width = Math.min(d.system.cpuUsagePercent, 100) + '%';
+        document.getElementById('stat-dotnet').textContent = d.system.dotNetVersion;
+
+        const ramMb = (d.system.memoryWorkingSetBytes / (1024 * 1024)).toFixed(0);
+        const gcMb = (d.system.memoryGcHeapBytes / (1024 * 1024)).toFixed(0);
+        document.getElementById('stat-ram').textContent = ramMb + ' MB';
+        document.getElementById('stat-ram-sub').textContent = 'GC Managed: ' + gcMb + ' MB';
+
+        // Conns
+        document.getElementById('stat-conns').textContent = d.connections.activeWebSockets;
+        document.getElementById('tab-client-count').textContent = d.connections.activeWebSockets;
+        document.getElementById('stat-conns-sub').textContent = `${d.connections.authenticatedWebSockets} Authenticated · ${d.connections.activeSubscriptions} Subscriptions`;
+
+        // Bandwidth
+        const inRate = (d.network.inboundBytesPerSecond / 1024).toFixed(1);
+        const outRate = (d.network.outboundBytesPerSecond / 1024).toFixed(1);
+        document.getElementById('stat-bandwidth').textContent = `↓ ${inRate} KB/s  ↑ ${outRate} KB/s`;
+        const inTotalMb = (d.network.totalInboundBytes / (1024*1024)).toFixed(1);
+        const outTotalMb = (d.network.totalOutboundBytes / (1024*1024)).toFixed(1);
+        document.getElementById('stat-traffic-sub').textContent = `Total: ↓ ${inTotalMb} MB · ↑ ${outTotalMb} MB`;
+
+        // Storage
+        document.getElementById('stat-events-count').textContent = Number(d.storage.totalEventsCount).toLocaleString() + ' events';
+        document.getElementById('stat-db-size').textContent = (d.storage.databaseSizeBytes / (1024 * 1024)).toFixed(1) + ' MB';
+        document.getElementById('stat-blobs-count').textContent = d.storage.blossomBlobsCount + ' files';
+        const blossomTabBadge = document.getElementById('tab-blossom-count');
+        if (blossomTabBadge) blossomTabBadge.textContent = d.storage.blossomBlobsCount;
+        document.getElementById('stat-blobs-size').textContent = (d.storage.blossomStorageSizeBytes / (1024 * 1024)).toFixed(1) + ' MB';
+
+        // Node info
+        document.getElementById('stat-os').textContent = d.system.osDescription;
+        const upHours = (d.system.uptimeSeconds / 3600).toFixed(1);
+        document.getElementById('stat-uptime').textContent = upHours + ' hours';
+        document.getElementById('stat-started').textContent = new Date(d.system.processStartTime).toLocaleTimeString();
+        document.getElementById('stat-mod-summary').textContent = `${d.moderation.pendingReportsCount} reports / ${d.moderation.pendingAppealsCount} appeals`;
+        document.getElementById('tab-report-count').textContent = d.moderation.pendingReportsCount;
+        document.getElementById('tab-appeal-count').textContent = d.moderation.pendingAppealsCount;
+
+      } catch (e) {
+        console.error('Telemetry fetch error', e);
+      }
+    }
+
+    // CLIENTS
+    async function fetchClients() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/clients', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const clients = await res.json();
+        const tbody = document.getElementById('clients-table-body');
+        if (clients.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No active clients connected.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = clients.map(c => `
+          <tr>
+            <td class="mono">${c.clientId.substring(0, 10)}...</td>
+            <td>${c.ipAddress || 'unknown'}</td>
+            <td class="mono">${c.publicKey ? c.publicKey.substring(0, 12) + '...' : '<span style="color: var(--text-muted);">Anonymous</span>'}</td>
+            <td>${c.durationSeconds}s</td>
+            <td>
+              ${c.subscriptionCount > 0
+                ? `<button class="btn btn-sm" style="padding: 2px 8px; font-weight: 600;" onclick="inspectClientSubs('${c.clientId}')">${c.subscriptionCount} inspect</button>`
+                : `<span style="color: var(--text-muted);">0</span>`}
+            </td>
+            <td>
+              <button class="btn btn-sm btn-danger" onclick="kickClient('${c.clientId}')">Kick</button>
+              ${c.publicKey ? `<button class="btn btn-sm" onclick="banPubkeyQuick('${c.publicKey}')">Ban</button>` : ''}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    let currentInspectClientId = null;
+
+    async function inspectClientSubs(clientId) {
+      currentInspectClientId = clientId;
+      const modal = document.getElementById('client-subs-modal');
+      const title = document.getElementById('client-subs-title');
+      const content = document.getElementById('client-subs-content');
+      title.innerText = `Subscriptions for Client: ${clientId.substring(0, 12)}...`;
+      content.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">Loading subscriptions...</div>';
+      modal.classList.remove('hidden');
+
+      try {
+        const res = await fetch(`/api/admin/clients/${clientId}/subscriptions`, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) {
+          content.innerHTML = '<div style="color: var(--danger); padding: 1rem;">Failed to load subscriptions.</div>';
+          return;
+        }
+        const subs = await res.json();
+        if (subs.length === 0) {
+          content.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No active subscriptions for this client.</div>';
+          return;
+        }
+
+        content.innerHTML = `
+          <div class="table-container">
+            <table class="table" style="font-size: 0.8rem;">
+              <thead>
+                <tr>
+                  <th>Subscription ID</th>
+                  <th>Filters / Kinds</th>
+                  <th>Delivered</th>
+                  <th>Created</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${subs.map(s => {
+                  const filterSummary = s.filters.map(f => {
+                    const parts = [];
+                    if (f.kinds && f.kinds.length) parts.push(`kinds: [${f.kinds.join(', ')}]`);
+                    if (f.authors && f.authors.length) parts.push(`authors: ${f.authors.length}`);
+                    if (f.ids && f.ids.length) parts.push(`ids: ${f.ids.length}`);
+                    if (f.since) parts.push(`since: ${new Date(f.since * 1000).toLocaleTimeString()}`);
+                    if (f.until) parts.push(`until: ${new Date(f.until * 1000).toLocaleTimeString()}`);
+                    if (f.limit) parts.push(`limit: ${f.limit}`);
+                    return parts.length ? parts.join(' | ') : 'all';
+                  }).join('<br>');
+
+                  return `
+                    <tr>
+                      <td class="mono" style="font-size: 0.75rem;">${s.id}</td>
+                      <td style="color: var(--text-muted); font-size: 0.75rem;">${filterSummary}</td>
+                      <td><b>${s.eventsSent || 0}</b></td>
+                      <td style="font-size: 0.75rem;">${new Date(s.createdAt).toLocaleTimeString()}</td>
+                      <td>
+                        <button class="btn btn-sm btn-danger" onclick="closeSubscription('${clientId}', '${s.id}')">Close</button>
+                      </td>
+                    </tr>
+                  `;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `<div style="color: var(--danger); padding: 1rem;">Error: ${err.message}</div>`;
+      }
+    }
+
+    function closeClientSubsModal() {
+      document.getElementById('client-subs-modal').classList.add('hidden');
+      currentInspectClientId = null;
+    }
+
+    async function closeSubscription(clientId, subId) {
+      if (!confirm(`Force close subscription '${subId}'?`)) return;
+      try {
+        const res = await fetch(`/api/admin/clients/${clientId}/subscriptions/${subId}/close`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+          showToast(`Subscription ${subId} closed`);
+          inspectClientSubs(clientId);
+          fetchClients();
+        } else {
+          showToast('Failed to close subscription', 'error');
+        }
+      } catch (e) {
+        showToast('Error closing subscription', 'error');
+      }
+    }
+
+    async function kickClient(clientId) {
+      if (!confirm('Disconnect this client?')) return;
+      const res = await fetch(`/api/admin/clients/${clientId}/disconnect`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Admin kick' })
+      });
+      if (res.ok) {
+        showToast('Client disconnected');
+        fetchClients();
+      }
+    }
+
+    function banPubkeyQuick(pk) {
+      document.getElementById('rule-pubkey').value = pk;
+      document.getElementById('rule-status').value = '1';
+      document.getElementById('rule-reason').value = 'Admin manual ban';
+      switchTab('pubkeys');
+    }
+
+    // PUBKEY RULES
+    async function fetchPubkeyRules() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/pubkeys', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const rules = await res.json();
+        const tbody = document.getElementById('pubkeys-table-body');
+        if (rules.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No pubkey rules defined.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = rules.map(r => `
+          <tr>
+            <td class="mono">${r.publicKey}</td>
+            <td><span class="badge ${r.status === 1 ? 'badge-banned' : r.status === 2 ? 'badge-whitelisted' : 'badge-allowed'}">${r.status === 1 ? 'BANNED' : r.status === 2 ? 'WHITELISTED' : 'ALLOWED'}</span></td>
+            <td>${r.banReason || '-'}</td>
+            <td>${r.customStorageQuotaBytes ? (r.customStorageQuotaBytes / (1024*1024)).toFixed(0) + ' MB' : 'Default'}</td>
+            <td>${new Date(r.createdAt).toLocaleDateString()}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deletePubkeyRule('${r.publicKey}')">Remove</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function savePubkeyRule() {
+      const pk = document.getElementById('rule-pubkey').value.trim();
+      const status = parseInt(document.getElementById('rule-status').value);
+      const reason = document.getElementById('rule-reason').value.trim();
+      const quotaMb = document.getElementById('rule-quota').value;
+      const quotaBytes = quotaMb ? parseInt(quotaMb) * 1024 * 1024 : null;
+
+      if (!pk) { alert('Pubkey is required.'); return; }
+
+      const res = await fetch('/api/admin/pubkeys/rule', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ publicKey: pk, status, reason, customStorageQuotaBytes: quotaBytes })
+      });
+      if (res.ok) {
+        showToast('Rule saved successfully');
+        document.getElementById('rule-pubkey').value = '';
+        fetchPubkeyRules();
+      }
+    }
+
+    async function deletePubkeyRule(pk) {
+      if (!confirm(`Delete rule for ${pk}?`)) return;
+      const res = await fetch(`/api/admin/pubkeys/${pk}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (res.ok) {
+        showToast('Rule removed');
+        fetchPubkeyRules();
+      }
+    }
+
+    // REPORTS
+    async function fetchReports() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/reports', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const reports = await res.json();
+        const tbody = document.getElementById('reports-table-body');
+        if (reports.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No reports found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = reports.map(r => `
+          <tr>
+            <td>#${r.id}</td>
+            <td><span class="badge badge-pending">${r.category}</span></td>
+            <td class="mono">${r.targetPubkey.substring(0, 12)}...</td>
+            <td class="mono">${r.targetEventId ? r.targetEventId.substring(0, 12) + '...' : '-'}</td>
+            <td>${r.content || '-'}</td>
+            <td><span class="badge ${r.status === 0 ? 'badge-pending' : 'badge-allowed'}">${r.status === 0 ? 'PENDING' : 'RESOLVED'}</span></td>
+            <td>
+              ${r.status === 0 ? `
+                <button class="btn btn-sm" onclick="resolveReport(${r.id}, 1)">Dismiss</button>
+                <button class="btn btn-sm btn-danger" onclick="resolveReport(${r.id}, 2)">Take Action</button>
+              ` : '<span style="color: var(--text-muted); font-size: 0.75rem;">Completed</span>'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function resolveReport(id, status) {
+      const notes = prompt('Enter resolution notes:');
+      const res = await fetch(`/api/admin/reports/${id}/resolve`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, notes })
+      });
+      if (res.ok) {
+        showToast('Report resolved');
+        fetchReports();
+      }
+    }
+
+    // APPEALS
+    async function fetchAppeals() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/appeals', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const appeals = await res.json();
+        const tbody = document.getElementById('appeals-table-body');
+        if (appeals.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted);">No appeals found.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = appeals.map(a => `
+          <tr>
+            <td>#${a.id}</td>
+            <td class="mono">${a.appellantPubkey.substring(0, 12)}...</td>
+            <td class="mono">${a.targetEventId ? a.targetEventId.substring(0, 12) + '...' : '-'}</td>
+            <td>${a.appealMessage}</td>
+            <td><span class="badge ${a.status === 0 ? 'badge-pending' : a.status === 1 ? 'badge-whitelisted' : 'badge-banned'}">${a.status === 0 ? 'PENDING' : a.status === 1 ? 'APPROVED' : 'REJECTED'}</span></td>
+            <td>${new Date(a.submittedAt).toLocaleDateString()}</td>
+            <td>
+              ${a.status === 0 ? `
+                <button class="btn btn-sm btn-primary" onclick="reviewAppeal(${a.id}, 1)">Approve</button>
+                <button class="btn btn-sm btn-danger" onclick="reviewAppeal(${a.id}, 2)">Reject</button>
+              ` : '-'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function reviewAppeal(id, status) {
+      const comment = prompt('Enter moderator comment:');
+      const res = await fetch(`/api/admin/appeals/${id}/review`, {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status, comment })
+      });
+      if (res.ok) {
+        showToast('Appeal updated');
+        fetchAppeals();
+      }
+    }
+
+    // ========================================================
+    // CONFIGURATION: DYNAMIC FORM + ADVANCED RAW JSON
+    // ========================================================
+
+    function filterConfigCategory(cat, btn) {
+      document.querySelectorAll('.config-cat-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      const cards = document.querySelectorAll('#config-visual-container .cfg-card');
+      cards.forEach(c => {
+        if (cat === 'all' || c.dataset.cat === cat) {
+          c.classList.remove('hidden');
+        } else {
+          c.classList.add('hidden');
+        }
+      });
+    }
+
+    function addCustomNip() {
+      const input = document.getElementById('cfg-custom-nip-input');
+      const val = parseInt(input.value);
+      if (isNaN(val) || val <= 0) {
+        alert('Please enter a valid positive NIP number (e.g. 50)');
+        return;
+      }
+
+      if (!currentConfig.RelayInformation) currentConfig.RelayInformation = {};
+      if (!currentConfig.RelayInformation.SupportedNips) currentConfig.RelayInformation.SupportedNips = [];
+
+      let list = currentConfig.RelayInformation.SupportedNips.map(n => parseInt(n));
+      if (!list.includes(val)) {
+        list.push(val);
+        list.sort((a, b) => a - b);
+        currentConfig.RelayInformation.SupportedNips = list;
+        renderNipChips(list);
+        syncVisualToState();
+        showToast(`Added NIP-${val} to supported NIPs`);
+      } else {
+        showToast(`NIP-${val} is already in the list`);
+      }
+      input.value = '';
+    }
+
+    function quickAddProtectedKind(kind) {
+      const input = document.getElementById('cfg-protected-kinds');
+      let kinds = input.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+      if (!kinds.includes(kind)) {
+        kinds.push(kind);
+        kinds.sort((a, b) => a - b);
+        input.value = kinds.join(', ');
+        syncVisualToState();
+        showToast(`Added Kind ${kind} to Protected Event Kinds`);
+      } else {
+        showToast(`Kind ${kind} is already protected`);
+      }
+    }
+
+    function switchConfigSubtab(mode) {
+      const btnVisual = document.getElementById('subtab-btn-visual');
+      const btnRaw = document.getElementById('subtab-btn-raw');
+      const visualContainer = document.getElementById('config-visual-container');
+      const rawContainer = document.getElementById('config-raw-container');
+
+      if (mode === 'visual') {
+        if (!isRawJsonValid) {
+          alert('Please resolve JSON syntax errors before switching to the dynamic visual editor.');
+          return;
+        }
+        btnVisual.classList.add('active');
+        btnRaw.classList.remove('active');
+        visualContainer.classList.remove('hidden');
+        rawContainer.classList.add('hidden');
+        try {
+          currentConfig = JSON.parse(document.getElementById('config-json-editor').value);
+        } catch (e) {}
+        populateVisualForm(currentConfig);
+      } else {
+        syncVisualToState();
+        btnVisual.classList.remove('active');
+        btnRaw.classList.add('active');
+        visualContainer.classList.add('hidden');
+        rawContainer.classList.remove('hidden');
+        document.getElementById('config-json-editor').value = JSON.stringify(currentConfig, null, 2);
+        validateRawJson();
+        renderSchemaHints('');
+      }
+    }
+
+    async function fetchConfig() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/config', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        currentConfig = await res.json();
+        document.getElementById('config-json-editor').value = JSON.stringify(currentConfig, null, 2);
+        populateVisualForm(currentConfig);
+        validateRawJson();
+        renderSchemaHints('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function populateVisualForm(cfg) {
+      if (!cfg) return;
+
+      // 1. Relay Information
+      const relay = cfg.RelayInformation || {};
+      document.getElementById('cfg-name').value = relay.Name || '';
+      document.getElementById('cfg-description').value = relay.Description || '';
+      document.getElementById('cfg-pubkey').value = relay.PublicKey || '';
+      document.getElementById('cfg-contact').value = relay.Contact || '';
+      document.getElementById('cfg-version').value = relay.Version || '';
+      renderNipChips(relay.SupportedNips || []);
+
+      // 2. Server & Network
+      const srv = cfg.Server || {};
+      document.getElementById('cfg-server-host').value = srv.Host || '0.0.0.0';
+      document.getElementById('cfg-server-port').value = srv.Port ?? 8083;
+      const conn = cfg.Connection || {};
+      document.getElementById('cfg-ws-path').value = conn.WebSocketsPath || '/';
+      document.getElementById('cfg-allowed-hosts').value = cfg.AllowedHosts || '*';
+      const admin = cfg.Admin || {};
+      document.getElementById('cfg-admin-path').value = admin.Path || '/admin';
+      document.getElementById('cfg-admin-enabled').checked = admin.Enabled !== false;
+
+      // Update example LAN url
+      const currentHost = window.location.hostname || '192.168.88.31';
+      const portVal = srv.Port ?? 8083;
+      const exEl = document.getElementById('cfg-lan-example');
+      if (exEl) exEl.textContent = `http://${currentHost}:${portVal}`;
+
+      // 3. Auth
+      const auth = cfg.Auth || {};
+      document.getElementById('cfg-auth-mode').value = auth.Mode || 'Always';
+      document.getElementById('cfg-protected-kinds').value = (auth.ProtectedKinds || []).join(', ');
+
+      // 4. Limits - Events
+      const limits = cfg.Limits || {};
+      const evLimits = limits.Events || {};
+      document.getElementById('cfg-max-payload').value = limits.MaxPayloadSize ?? 524288;
+      document.getElementById('cfg-min-pow').value = evLimits.MinPowDifficulty ?? 0;
+      document.getElementById('cfg-max-events-min').value = evLimits.MaxEventsPerMinute ?? 300;
+      document.getElementById('cfg-max-event-tags').value = evLimits.MaxEventTags ?? 1000;
+      document.getElementById('cfg-max-pending-events').value = evLimits.MaxPendingEvents ?? 1024;
+      document.getElementById('cfg-created-at-lower').value = evLimits.MaxCreatedAtLowerOffset ?? 31536000;
+      document.getElementById('cfg-created-at-upper').value = evLimits.MaxCreatedAtUpperOffset ?? 60;
+
+      // 5. Limits - Subscriptions
+      const subLimits = limits.Subscriptions || {};
+      document.getElementById('cfg-max-subs').value = subLimits.MaxSubscriptions ?? 50;
+      document.getElementById('cfg-max-sub-filters').value = subLimits.MaxFilters ?? 20;
+      document.getElementById('cfg-max-subs-min').value = subLimits.MaxSubscriptionsPerMinute ?? 60;
+      document.getElementById('cfg-max-initial-limit').value = subLimits.MaxInitialLimit ?? 1000;
+      document.getElementById('cfg-max-sub-id-len').value = subLimits.MaxSubscriptionIdLength ?? 128;
+
+      // 6. Limits - Negentropy
+      const neg = limits.Negentropy || {};
+      document.getElementById('cfg-negentropy-max-subs').value = neg.MaxSubscriptions ?? 1;
+      document.getElementById('cfg-negentropy-max-filters').value = neg.MaxFilters ?? 20;
+      document.getElementById('cfg-negentropy-subs-min').value = neg.MaxSubscriptionsPerMinute ?? 5;
+      document.getElementById('cfg-negentropy-initial-limit').value = neg.MaxInitialLimit ?? 500000;
+      document.getElementById('cfg-negentropy-frame-size').value = neg.FrameSizeLimit ?? 524288;
+      document.getElementById('cfg-negentropy-sub-age').value = neg.MaxSubscriptionAgeSeconds ?? 300;
+      document.getElementById('cfg-negentropy-stale-limit').value = neg.StaleSubscriptionLimitSeconds ?? 30;
+      document.getElementById('cfg-negentropy-stale-period').value = neg.StaleSubscriptionPeriodSeconds ?? 60;
+
+      // 7. Blossom
+      const blossom = cfg.Blossom || {};
+      document.getElementById('cfg-blossom-enabled').checked = !!blossom.Enabled;
+      document.getElementById('cfg-blossom-auth').checked = blossom.AuthRequired !== false;
+      document.getElementById('cfg-blossom-max-file').value = blossom.MaxUploadSizeBytes ? Math.round(blossom.MaxUploadSizeBytes / (1024 * 1024)) : 10;
+      document.getElementById('cfg-blossom-user-quota').value = blossom.MaxStoragePerUserBytes ? Math.round(blossom.MaxStoragePerUserBytes / (1024 * 1024)) : 1024;
+      document.getElementById('cfg-blossom-total-storage').value = blossom.MaxTotalStorageBytes ? Math.round(blossom.MaxTotalStorageBytes / (1024 * 1024 * 1024)) : 0;
+      document.getElementById('cfg-blossom-max-uploads-min').value = blossom.MaxUploadsPerMinute ?? 30;
+      document.getElementById('cfg-blossom-path').value = blossom.StoragePath || 'blossom_data';
+      document.getElementById('cfg-blossom-mimes').value = (blossom.AllowedMimeTypes || []).join('\n');
+
+      // 8. Cleanup
+      const clean = cfg.Cleanup || {};
+      document.getElementById('cfg-clean-deleted-days').value = clean.DeleteDeletedEventsAfterDays ?? 7;
+      document.getElementById('cfg-clean-expired-days').value = clean.DeleteExpiredEventsAfterDays ?? 7;
+
+      // 9. Vanish
+      const vanish = cfg.Vanish || {};
+      document.getElementById('cfg-vanish-cancel-days').value = vanish.CancelWindowDays ?? 3;
+      document.getElementById('cfg-vanish-min-days').value = vanish.BanAtMinDays ?? 1;
+      document.getElementById('cfg-vanish-max-days').value = vanish.BanAtMaxDays ?? 30;
+      document.getElementById('cfg-vanish-interval').value = vanish.ExecutionIntervalSeconds ?? 60;
+
+      // 10. Notifications & Libregram
+      const notif = cfg.Notifications || {};
+      document.getElementById('cfg-notif-enabled').checked = notif.Enabled !== false;
+      document.getElementById('cfg-notif-max-events').value = notif.MaxEvents ?? 50;
+      document.getElementById('cfg-notif-max-since-days').value = notif.MaxSinceAgeDays ?? 90;
+      document.getElementById('cfg-notif-token-lifetime-days').value = notif.TokenLifetimeDays ?? 10;
+
+      const lg = cfg.Libregram || {};
+      document.getElementById('cfg-lg-enabled').checked = lg.Enabled !== false;
+      document.getElementById('cfg-lg-flavor').value = lg.RelayFlavor || 'libregram';
+      document.getElementById('cfg-lg-version').value = lg.ProtocolVersion ?? 1;
+      document.getElementById('cfg-lg-commands').value = (lg.Commands || ['lg.capabilities', 'lg.notifications']).join(', ');
+
+      // 11. Logging
+      const serilog = cfg.Serilog || {};
+      const minLevel = serilog.MinimumLevel || {};
+      document.getElementById('cfg-log-level').value = (typeof minLevel === 'string' ? minLevel : minLevel.Default) || 'Debug';
+    }
+
+    function renderNipChips(supportedList) {
+      const container = document.getElementById('nip-chips-container');
+      const supportedSet = new Set(supportedList.map(n => parseInt(n)));
+
+      container.innerHTML = KNOWN_NIPS.map(nip => {
+        const active = supportedSet.has(nip.id);
+        return `
+          <div class="nip-chip ${active ? 'active' : ''}" onclick="toggleNip(${nip.id})" title="${nip.desc}">
+            <span>${active ? '✓' : '+'}</span>
+            <span>${nip.name}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function toggleNip(nipId) {
+      if (!currentConfig.RelayInformation) currentConfig.RelayInformation = {};
+      if (!currentConfig.RelayInformation.SupportedNips) currentConfig.RelayInformation.SupportedNips = [];
+
+      let list = currentConfig.RelayInformation.SupportedNips.map(n => parseInt(n));
+      if (list.includes(nipId)) {
+        list = list.filter(n => n !== nipId);
+      } else {
+        list.push(nipId);
+        list.sort((a, b) => a - b);
+      }
+
+      currentConfig.RelayInformation.SupportedNips = list;
+      renderNipChips(list);
+      document.getElementById('config-json-editor').value = JSON.stringify(currentConfig, null, 2);
+    }
+
+    function setHostPreset(val) {
+      document.getElementById('cfg-server-host').value = val;
+      syncVisualToState();
+      showToast('Set host preset to ' + val);
+    }
+
+    function setPortPreset(val) {
+      document.getElementById('cfg-server-port').value = val;
+      syncVisualToState();
+      showToast('Set port preset to ' + val);
+    }
+
+    function syncVisualToState() {
+      // 1. Relay Information
+      if (!currentConfig.RelayInformation) currentConfig.RelayInformation = {};
+      currentConfig.RelayInformation.Name = document.getElementById('cfg-name').value;
+      currentConfig.RelayInformation.Description = document.getElementById('cfg-description').value;
+      currentConfig.RelayInformation.PublicKey = document.getElementById('cfg-pubkey').value;
+      currentConfig.RelayInformation.Contact = document.getElementById('cfg-contact').value;
+      currentConfig.RelayInformation.Version = document.getElementById('cfg-version').value;
+
+      // 2. Server & Network
+      if (!currentConfig.Server) currentConfig.Server = {};
+      currentConfig.Server.Host = document.getElementById('cfg-server-host').value.trim() || '0.0.0.0';
+      currentConfig.Server.Port = parseInt(document.getElementById('cfg-server-port').value) || 8083;
+      if (!currentConfig.Connection) currentConfig.Connection = {};
+      currentConfig.Connection.WebSocketsPath = document.getElementById('cfg-ws-path').value || '/';
+      currentConfig.AllowedHosts = document.getElementById('cfg-allowed-hosts').value || '*';
+      if (!currentConfig.Admin) currentConfig.Admin = {};
+      currentConfig.Admin.Path = document.getElementById('cfg-admin-path').value || '/admin';
+      currentConfig.Admin.Enabled = document.getElementById('cfg-admin-enabled').checked;
+
+      // 3. Auth
+      if (!currentConfig.Auth) currentConfig.Auth = {};
+      currentConfig.Auth.Mode = document.getElementById('cfg-auth-mode').value;
+      const kindsStr = document.getElementById('cfg-protected-kinds').value;
+      currentConfig.Auth.ProtectedKinds = kindsStr.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n));
+
+      // 4. Limits - Events
+      if (!currentConfig.Limits) currentConfig.Limits = {};
+      currentConfig.Limits.MaxPayloadSize = parseInt(document.getElementById('cfg-max-payload').value) || 524288;
+      if (!currentConfig.Limits.Events) currentConfig.Limits.Events = {};
+      currentConfig.Limits.Events.MinPowDifficulty = parseInt(document.getElementById('cfg-min-pow').value) || 0;
+      currentConfig.Limits.Events.MaxEventsPerMinute = parseInt(document.getElementById('cfg-max-events-min').value) || 300;
+      currentConfig.Limits.Events.MaxEventTags = parseInt(document.getElementById('cfg-max-event-tags').value) || 1000;
+      currentConfig.Limits.Events.MaxPendingEvents = parseInt(document.getElementById('cfg-max-pending-events').value) || 1024;
+      currentConfig.Limits.Events.MaxCreatedAtLowerOffset = parseInt(document.getElementById('cfg-created-at-lower').value) || 31536000;
+      currentConfig.Limits.Events.MaxCreatedAtUpperOffset = parseInt(document.getElementById('cfg-created-at-upper').value) || 60;
+
+      // 5. Limits - Subscriptions
+      if (!currentConfig.Limits.Subscriptions) currentConfig.Limits.Subscriptions = {};
+      currentConfig.Limits.Subscriptions.MaxSubscriptions = parseInt(document.getElementById('cfg-max-subs').value) || 50;
+      currentConfig.Limits.Subscriptions.MaxFilters = parseInt(document.getElementById('cfg-max-sub-filters').value) || 20;
+      currentConfig.Limits.Subscriptions.MaxSubscriptionsPerMinute = parseInt(document.getElementById('cfg-max-subs-min').value) || 60;
+      currentConfig.Limits.Subscriptions.MaxInitialLimit = parseInt(document.getElementById('cfg-max-initial-limit').value) || 1000;
+      currentConfig.Limits.Subscriptions.MaxSubscriptionIdLength = parseInt(document.getElementById('cfg-max-sub-id-len').value) || 128;
+
+      // 6. Limits - Negentropy
+      if (!currentConfig.Limits.Negentropy) currentConfig.Limits.Negentropy = {};
+      currentConfig.Limits.Negentropy.MaxSubscriptions = parseInt(document.getElementById('cfg-negentropy-max-subs').value) || 1;
+      currentConfig.Limits.Negentropy.MaxFilters = parseInt(document.getElementById('cfg-negentropy-max-filters').value) || 20;
+      currentConfig.Limits.Negentropy.MaxSubscriptionsPerMinute = parseInt(document.getElementById('cfg-negentropy-subs-min').value) || 5;
+      currentConfig.Limits.Negentropy.MaxInitialLimit = parseInt(document.getElementById('cfg-negentropy-initial-limit').value) || 500000;
+      currentConfig.Limits.Negentropy.FrameSizeLimit = parseInt(document.getElementById('cfg-negentropy-frame-size').value) || 524288;
+      currentConfig.Limits.Negentropy.MaxSubscriptionAgeSeconds = parseInt(document.getElementById('cfg-negentropy-sub-age').value) || 300;
+      currentConfig.Limits.Negentropy.StaleSubscriptionLimitSeconds = parseInt(document.getElementById('cfg-negentropy-stale-limit').value) || 30;
+      currentConfig.Limits.Negentropy.StaleSubscriptionPeriodSeconds = parseInt(document.getElementById('cfg-negentropy-stale-period').value) || 60;
+
+      // 7. Blossom
+      if (!currentConfig.Blossom) currentConfig.Blossom = {};
+      currentConfig.Blossom.Enabled = document.getElementById('cfg-blossom-enabled').checked;
+      currentConfig.Blossom.AuthRequired = document.getElementById('cfg-blossom-auth').checked;
+      const maxFileMb = parseInt(document.getElementById('cfg-blossom-max-file').value) || 10;
+      currentConfig.Blossom.MaxUploadSizeBytes = maxFileMb * 1024 * 1024;
+      const userQuotaMb = parseInt(document.getElementById('cfg-blossom-user-quota').value) || 1024;
+      currentConfig.Blossom.MaxStoragePerUserBytes = userQuotaMb * 1024 * 1024;
+      const totalStorageGb = parseInt(document.getElementById('cfg-blossom-total-storage').value) || 0;
+      currentConfig.Blossom.MaxTotalStorageBytes = totalStorageGb * 1024 * 1024 * 1024;
+      currentConfig.Blossom.MaxUploadsPerMinute = parseInt(document.getElementById('cfg-blossom-max-uploads-min').value) || 30;
+      currentConfig.Blossom.StoragePath = document.getElementById('cfg-blossom-path').value || 'blossom_data';
+      const mimesText = document.getElementById('cfg-blossom-mimes').value;
+      currentConfig.Blossom.AllowedMimeTypes = mimesText.split(/[\n,]/).map(s => s.trim()).filter(s => s.length > 0);
+
+      // 8. Cleanup
+      if (!currentConfig.Cleanup) currentConfig.Cleanup = {};
+      currentConfig.Cleanup.DeleteDeletedEventsAfterDays = parseInt(document.getElementById('cfg-clean-deleted-days').value) || 7;
+      currentConfig.Cleanup.DeleteExpiredEventsAfterDays = parseInt(document.getElementById('cfg-clean-expired-days').value) || 7;
+
+      // 9. Vanish
+      if (!currentConfig.Vanish) currentConfig.Vanish = {};
+      currentConfig.Vanish.CancelWindowDays = parseInt(document.getElementById('cfg-vanish-cancel-days').value) || 3;
+      currentConfig.Vanish.BanAtMinDays = parseInt(document.getElementById('cfg-vanish-min-days').value) || 1;
+      currentConfig.Vanish.BanAtMaxDays = parseInt(document.getElementById('cfg-vanish-max-days').value) || 30;
+      currentConfig.Vanish.ExecutionIntervalSeconds = parseInt(document.getElementById('cfg-vanish-interval').value) || 60;
+
+      // 10. Notifications & Libregram
+      if (!currentConfig.Notifications) currentConfig.Notifications = {};
+      currentConfig.Notifications.Enabled = document.getElementById('cfg-notif-enabled').checked;
+      currentConfig.Notifications.MaxEvents = parseInt(document.getElementById('cfg-notif-max-events').value) || 50;
+      currentConfig.Notifications.MaxSinceAgeDays = parseInt(document.getElementById('cfg-notif-max-since-days').value) || 90;
+      currentConfig.Notifications.TokenLifetimeDays = parseInt(document.getElementById('cfg-notif-token-lifetime-days').value) || 10;
+
+      if (!currentConfig.Libregram) currentConfig.Libregram = {};
+      currentConfig.Libregram.Enabled = document.getElementById('cfg-lg-enabled').checked;
+      currentConfig.Libregram.RelayFlavor = document.getElementById('cfg-lg-flavor').value || 'libregram';
+      currentConfig.Libregram.ProtocolVersion = parseInt(document.getElementById('cfg-lg-version').value) || 1;
+      const cmdStr = document.getElementById('cfg-lg-commands').value;
+      currentConfig.Libregram.Commands = cmdStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+      // 11. Logging
+      if (!currentConfig.Serilog) currentConfig.Serilog = {};
+      if (typeof currentConfig.Serilog.MinimumLevel === 'object') {
+        currentConfig.Serilog.MinimumLevel.Default = document.getElementById('cfg-log-level').value;
+      } else {
+        currentConfig.Serilog.MinimumLevel = { Default: document.getElementById('cfg-log-level').value };
+      }
+
+      document.getElementById('config-json-editor').value = JSON.stringify(currentConfig, null, 2);
+      validateRawJson();
+    }
+
+    function handleRawJsonInput() {
+      validateRawJson();
+      if (isRawJsonValid) {
+        try {
+          currentConfig = JSON.parse(document.getElementById('config-json-editor').value);
+          populateVisualForm(currentConfig);
+        } catch (e) {}
+      }
+    }
+
+    function findJsonErrorLocation(jsonString) {
+      try {
+        JSON.parse(jsonString);
+        return null;
+      } catch (err) {
+        const msg = err.message || "";
+        let line = 1, col = 1, pos = -1;
+
+        const lineColMatch = msg.match(/line (\d+)\s*(?:column|col)\s*(\d+)/i);
+        if (lineColMatch) {
+          line = parseInt(lineColMatch[1], 10);
+          col = parseInt(lineColMatch[2], 10);
+        } else {
+          const posMatch = msg.match(/position (\d+)/i);
+          if (posMatch) {
+            pos = parseInt(posMatch[1], 10);
+            const lines = jsonString.slice(0, pos).split('\n');
+            line = lines.length;
+            col = lines[lines.length - 1].length + 1;
+          }
+        }
+
+        const allLines = jsonString.split('\n');
+        const errLineText = allLines[line - 1] || "";
+        let snippet = "";
+        if (line > 1) snippet += (line - 1) + ": " + (allLines[line - 2] || "") + "\n";
+        snippet += line + ": " + errLineText + "\n";
+        snippet += " ".repeat(Math.max(0, String(line).length + 2 + col - 1)) + "^\n";
+        if (line < allLines.length) snippet += (line + 1) + ": " + (allLines[line] || "");
+
+        return { message: msg, line, col, snippet };
+      }
+    }
+
+    function validateRawJson() {
+      const text = document.getElementById('config-json-editor').value;
+      const pill = document.getElementById('json-validity-pill');
+      const errBanner = document.getElementById('json-error-banner');
+      const btnSave = document.getElementById('btn-save-cfg');
+
+      const err = findJsonErrorLocation(text);
+      if (!err) {
+        isRawJsonValid = true;
+        const sizeKb = (new TextEncoder().encode(text).length / 1024).toFixed(1);
+        pill.className = "badge badge-whitelisted";
+        pill.textContent = `● Valid JSON (${sizeKb} KB)`;
+        errBanner.classList.add('hidden');
+        errBanner.textContent = '';
+        if (btnSave) btnSave.disabled = false;
+      } else {
+        isRawJsonValid = false;
+        pill.className = "badge badge-banned";
+        pill.textContent = `⚠ Syntax Error (${err.line}:${err.col})`;
+        errBanner.textContent = `Syntax Error at Line ${err.line}, Column ${err.col}: ${err.message}\n\n${err.snippet}`;
+        errBanner.classList.remove('hidden');
+        if (btnSave) btnSave.disabled = true;
+      }
+    }
+
+    function formatRawJson() {
+      try {
+        const text = document.getElementById('config-json-editor').value;
+        const parsed = JSON.parse(text);
+        document.getElementById('config-json-editor').value = JSON.stringify(parsed, null, 2);
+        validateRawJson();
+        showToast('JSON formatted successfully');
+      } catch (e) {
+        alert('Cannot format invalid JSON: ' + e.message);
+      }
+    }
+
+    function compactRawJson() {
+      try {
+        const text = document.getElementById('config-json-editor').value;
+        const parsed = JSON.parse(text);
+        document.getElementById('config-json-editor').value = JSON.stringify(parsed);
+        validateRawJson();
+        showToast('JSON compacted successfully');
+      } catch (e) {
+        alert('Cannot compact invalid JSON: ' + e.message);
+      }
+    }
+
+    function copyRawJson() {
+      const text = document.getElementById('config-json-editor').value;
+      navigator.clipboard.writeText(text);
+      showToast('Configuration copied to clipboard');
+    }
+
+    function toggleSchemaHints() {
+      const panel = document.getElementById('schema-hints-panel');
+      const btn = document.getElementById('btn-toggle-hints');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        btn.textContent = 'Hide Hints';
+      } else {
+        panel.classList.add('hidden');
+        btn.textContent = '🔍 Key Hints';
+      }
+    }
+
+    function filterSchemaHints(query) {
+      renderSchemaHints(query || '');
+    }
+
+    function renderSchemaHints(query) {
+      const container = document.getElementById('hints-list-container');
+      const countEl = document.getElementById('hints-count');
+      if (!container) return;
+
+      const q = (query || '').toLowerCase().trim();
+      const filtered = SCHEMA_HINTS.filter(h => 
+        h.key.toLowerCase().includes(q) || 
+        h.desc.toLowerCase().includes(q) || 
+        h.type.toLowerCase().includes(q)
+      );
+
+      if (countEl) countEl.textContent = `${filtered.length} keys`;
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 2rem 0;">No matching schema keys found</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(h => `
+        <div class="hint-item" onclick="insertHintKey('${h.key}', '${h.def}')" title="Click to copy hint">
+          <div class="hint-header">
+            <span class="hint-key">${h.key}</span>
+            <span class="hint-type">${h.type}</span>
+          </div>
+          <div class="hint-desc">${h.desc}</div>
+          <div class="hint-def">Default: ${h.def}</div>
+        </div>
+      `).join('');
+    }
+
+    function insertHintKey(key, defVal) {
+      navigator.clipboard.writeText(`"${key}": ${defVal}`);
+      showToast(`Copied hint: ${key}`);
+    }
+
+    async function saveRelayConfig() {
+      let payloadToSave = currentConfig;
+
+      if (!isRawJsonValid) {
+        alert('Please resolve JSON syntax errors before saving.');
+        return;
+      }
+
+      try {
+        payloadToSave = JSON.parse(document.getElementById('config-json-editor').value);
+      } catch (e) {
+        alert('Invalid JSON: ' + e.message);
+        return;
+      }
+
+      const saveBtn = document.getElementById('btn-save-cfg');
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+      }
+
+      try {
+        const res = await fetch('/api/admin/config', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payloadToSave)
+        });
+        if (res.ok) {
+          showToast('Relay configuration saved successfully');
+          currentConfig = payloadToSave;
+          populateVisualForm(currentConfig);
+        } else {
+          const err = await res.json();
+          alert('Failed to save configuration: ' + (err.error || 'Server error'));
+        }
+      } catch (ex) {
+        alert('Failed to connect to relay: ' + ex.message);
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = '💾 Save Configuration';
+        }
+      }
+    }
+
+    // LOGS
+    async function fetchLogs() {
+      if (!token) return;
+      try {
+        const res = await fetch('/api/admin/logs?lines=100', { headers: { 'Authorization': 'Bearer ' + token } });
+        if (!res.ok) return;
+        const lines = await res.json();
+        const term = document.getElementById('log-terminal');
+        term.textContent = lines.join('\n');
+        term.scrollTop = term.scrollHeight;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Initial check
+    checkAuth();
+  </script>
+</body>
+</html>

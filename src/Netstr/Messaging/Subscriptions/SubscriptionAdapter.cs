@@ -1,4 +1,4 @@
-﻿using Netstr.Messaging.Models;
+using Netstr.Messaging.Models;
 using System.Collections.Concurrent;
 
 namespace Netstr.Messaging.Subscriptions
@@ -21,10 +21,21 @@ namespace Netstr.Messaging.Subscriptions
 
         public SubscriptionFilter[] Filters { get; }
 
+        public string SubscriptionId => this.subscriptionId;
+
+        public DateTimeOffset CreatedAt { get; } = DateTimeOffset.UtcNow;
+
+        public DateTimeOffset LastActivityAt { get; private set; } = DateTimeOffset.UtcNow;
+
+        public long EventsSentCount { get; private set; }
+
         public bool StoredEventsSent => this.storedEventsBatch != null;
 
         public void SendEvent(Event e)
         {
+            EventsSentCount++;
+            LastActivityAt = DateTimeOffset.UtcNow;
+
             if (StoredEventsSent)
             {
                 this.webSocketAdapter.Send(EventToMessage(e));
@@ -44,6 +55,9 @@ namespace Netstr.Messaging.Subscriptions
 
             var storedMessages = events.Select(EventToMessage).ToArray();
             var dequeuedMessages = this.eventsQueue.Select(EventToMessage).ToArray();
+            
+            EventsSentCount += storedMessages.Length + dequeuedMessages.Length;
+            LastActivityAt = DateTimeOffset.UtcNow;
             
             this.eventsQueue.Clear();
 

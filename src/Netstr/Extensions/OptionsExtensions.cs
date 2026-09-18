@@ -1,4 +1,4 @@
-﻿using Netstr.Options;
+using Netstr.Options;
 
 namespace Netstr.Extensions
 {
@@ -24,7 +24,10 @@ namespace Netstr.Extensions
                 .AddApplicationOptions<AuthOptions>("Auth")
                 .AddApplicationOptions<CleanupOptions>("Cleanup")
                 .AddApplicationOptions<BlossomOptions>("Blossom")
-                .AddApplicationOptions<NotificationOptions>("Notifications");
+                .AddApplicationOptions<NotificationOptions>("Notifications")
+                .AddApplicationOptions<VanishOptions>("Vanish")
+                .AddApplicationOptions<AdminOptions>("Admin")
+                .AddApplicationOptions<ServerOptions>("Server");
         }
     }
 }

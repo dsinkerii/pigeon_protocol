@@ -29,12 +29,25 @@ namespace Netstr.Tests
                 b.AddInMemoryObject(SubscriptionLimits, "Limits:Subscriptions");
                 b.AddInMemoryObject(NegentropyLimits, "Limits:Negentropy");
                 b.AddInMemoryCollection([ KeyValuePair.Create("Auth:Mode", AuthMode.ToString())]);
+                b.AddInMemoryObject(VanishOptions, "Vanish");
             });
         }
 
         public SubscriptionLimits? SubscriptionLimits { get; set; }
-        public EventLimits? EventLimits { get; set; }
+        public EventLimits? EventLimits { get; set; } = new EventLimits
+        {
+            MaxCreatedAtLowerOffset = 10 * 365 * 24 * 3600, // 10 years for test events
+            MaxCreatedAtUpperOffset = 60,
+            MaxPendingEvents = 1024,
+        };
         public NegentropyLimits? NegentropyLimits { get; set; }
+        public VanishOptions? VanishOptions { get; set; } = new VanishOptions
+        {
+            CancelWindowDays = 10000,
+            BanAtMinDays = 1,
+            BanAtMaxDays = 100000,
+            ExecutionIntervalSeconds = 3600
+        };
         public int MaxPayloadSize { get; set; } = 524288;
         public AuthMode AuthMode { get; set; } = AuthMode.Disabled;
 

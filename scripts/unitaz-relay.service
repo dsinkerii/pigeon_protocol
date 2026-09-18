@@ -1,0 +1,36 @@
+[Unit]
+Description=Unitaz Libregram Relay Service
+Documentation=https://github.com/Libregram/unitaz_relay
+After=network.target postgresql.service docker.service
+Wants=postgresql.service docker.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/unitaz-relay
+ExecStartPre=-/usr/bin/docker start netstr-postgres
+ExecStart=/usr/bin/dotnet /opt/unitaz-relay/Netstr.dll
+Restart=always
+RestartSec=3s
+
+# Security hardening
+ProtectSystem=full
+ProtectHome=false
+PrivateTmp=true
+NoNewPrivileges=true
+
+# High concurrency file descriptor limits for WebSocket handling
+LimitNOFILE=65535
+LimitNPROC=65535
+
+# Environment configuration
+Environment=ASPNETCORE_ENVIRONMENT=Production
+Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+
+# Standard output and error logging to journald / serilog
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=unitaz-relay
+
+[Install]
+WantedBy=multi-user.target

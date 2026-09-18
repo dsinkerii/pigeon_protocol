@@ -1,4 +1,4 @@
-﻿using System.Collections.Concurrent;
+using System.Collections.Concurrent;
 
 namespace Netstr.Messaging.WebSockets
 {
@@ -19,6 +19,12 @@ namespace Netstr.Messaging.WebSockets
         public void Add(IWebSocketAdapter adapter)
         {
             this.adapters.TryAdd(adapter.Context.ClientId, adapter);
+        }
+
+        public IWebSocketAdapter? GetById(string id)
+        {
+            this.adapters.TryGetValue(id, out var adapter);
+            return adapter;
         }
 
         public IEnumerable<IWebSocketAdapter> GetAll()
